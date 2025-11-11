@@ -1,0 +1,2 @@
+# qmagic
+Q Magic Software
