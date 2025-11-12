@@ -1,2 +1,2 @@
-# (Q Magic Utility) qmagic
-Q Magic Software
+# Cactus System
+A Terminal Application
