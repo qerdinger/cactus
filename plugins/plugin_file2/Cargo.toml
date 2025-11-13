@@ -1,0 +1,12 @@
+[package]
+name = "plugin_file2"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = "1"
+plugin_api = { path = "../../plugin_api" }
+ratatui = "0.29"

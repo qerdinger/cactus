@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "core",
+    "plugin_api",
+
+    "plugins/plugin_file",
+    "plugins/plugin_file2",
+]
+
+resolver = "2"
