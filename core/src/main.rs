@@ -59,6 +59,7 @@ fn main() -> Result<()> {
     let mut focused = 0usize;
     let mut last = Instant::now();
 
+    // Main loop
     'main: loop {
         while let Some((_topic, _bytes)) = rx.try_recv() {
             // Panel Routing System
@@ -71,7 +72,7 @@ fn main() -> Result<()> {
             p.on_tick(Tick { dt });
         }
 
-        // Display
+        // Display frame
         terminal.draw(|f| {
             let ptr = f as *const _ as *mut ();
             let mut fw = FrameWrapper::new(ptr);
