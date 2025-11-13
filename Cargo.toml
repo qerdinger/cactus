@@ -2,6 +2,7 @@
 members = [
     "core",
     "plugin_api",
+    "sdk",
 
     "plugins/plugin_file",
     "plugins/plugin_file2",

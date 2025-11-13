@@ -1,5 +1,6 @@
 mod plugins;
 mod bus;
+mod core;
 
 use std::time::{Duration, Instant};
 use anyhow::Result;
@@ -8,7 +9,15 @@ use crossterm::event::{Event, KeyEventKind};
 use ratatui::{Terminal, prelude::*, backend::CrosstermBackend};
 use plugin_api::*;
 
+use crate::core::Core;
+
 fn main() -> Result<()> {
+    // Build Core
+    let core: Core = Core::new();
+    core.log.log("test");
+
+    return Result::Ok(());
+
     // Setup TUI
     terminal::enable_raw_mode()?;
     let mut stdout = std::io::stdout();
