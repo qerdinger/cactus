@@ -8,15 +8,15 @@ use crossterm::{terminal, execute, event};
 use crossterm::event::{Event, KeyEventKind};
 use ratatui::{Terminal, prelude::*, backend::CrosstermBackend};
 use plugin_api::*;
+use sdk::log;
 
 use crate::core::Core;
 
 fn main() -> Result<()> {
     // Build Core
     let core: Core = Core::new();
-    core.log.log("test");
-
-    return Result::Ok(());
+    log!(core.log, "CACTUS");
+    log!(core.log, "Launching application...");
 
     // Setup TUI
     terminal::enable_raw_mode()?;

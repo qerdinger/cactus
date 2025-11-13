@@ -26,3 +26,13 @@ impl Logger for TracingLogger {
         event!(Level::TRACE, "{}", s);
     }
 }
+
+#[macro_export]
+macro_rules! log {
+    ($logger:expr, $($arg:expr),+ $(,)?) => {
+        {
+            let msg = [$($arg),+].join(" ");
+            $logger.log(&msg);
+        }
+    };
+}
