@@ -29,7 +29,28 @@ fn main() -> Result<()> {
     let (tx, mut rx) = bus::channel();
 
     // Plugin Loading
-    let mut loaded = plugins::load_from_dir(std::path::Path::new("plugins"))?;
+    let mut loaded;
+    match plugins::load_from_dir(std::path::Path::new("plugins")) {
+        Ok(v) => loaded = v,
+        Err(err) => {
+            terminal::disable_raw_mode()?;
+            execute!(terminal.backend_mut(), terminal::LeaveAlternateScreen, event::DisableMouseCapture)?;
+            terminal.show_cursor()?;
+        
+            log!(core.log, err.to_string());
+            core.exit(-1);
+        }
+    }
+
+    if loaded.is_empty() {
+        terminal::disable_raw_mode()?;
+        execute!(terminal.backend_mut(), terminal::LeaveAlternateScreen, event::DisableMouseCapture)?;
+        terminal.show_cursor()?;
+
+        log!(core.log, "[No plugins] found in plugins folder!");
+        core.exit(0);
+    }
+
     for lp in loaded.iter_mut() {
         lp.plugin.init(Box::new(tx.clone()))?;
         lp.plugin.start_tasks(Box::new(tx.clone()))?;
