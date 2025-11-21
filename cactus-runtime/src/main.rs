@@ -25,4 +25,7 @@ fn main() {
     let fragments = disc.lookup();
 
     info!("{} fragment(s) discovered", fragments.len());
+    for fragment in fragments {
+        info!("{}", fragment.name());
+    }
 }
