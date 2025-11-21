@@ -1,4 +1,5 @@
 use tracing::{info, Level};
+use tracing_subscriber::fmt::init;
 use tracing_subscriber::FmtSubscriber;
 
 mod discovery;
@@ -24,6 +25,6 @@ fn main() {
     let functions = disc.lookup();
 
     for fnc in functions {
-        info!("function name=[{}] discovered !", fnc.name)
+        info!("function name=[{}] [{:?}] discovered !", fnc.name, fnc.lang);
     }
 }

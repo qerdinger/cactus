@@ -1,3 +1,6 @@
+use std::fmt::Display;
+
+#[derive(Debug)]
 pub enum Language {
     C,
     Cpp,
@@ -5,6 +8,7 @@ pub enum Language {
     Java
 }
 
+#[derive(Debug)]
 pub struct Lang {
     pub lang: Language,
 }
