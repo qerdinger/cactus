@@ -3,11 +3,11 @@ use tracing_subscriber::fmt::init;
 use tracing_subscriber::FmtSubscriber;
 
 mod discovery;
-mod functions;
-
+mod function;
+mod fragment;
 use crate::discovery::discover::Discover;
 use crate::discovery::lang::{Lang, Language};
-use crate::functions::function::Function;
+use crate::function::function::Function;
 
 fn tracing_subscriber_handler(max_level: Level) {
     let subscriber = FmtSubscriber::builder()
@@ -22,10 +22,7 @@ fn main() {
     info!("Cactus Runtime System");
 
     let disc = Discover();
-    let functions = disc.lookup();
+    let fragments = disc.lookup();
 
-    info!("{} function(s) discovered", functions.len());
-    for fnc in functions {
-        info!("> [{:?}]", fnc);
-    }
+    info!("{} fragment(s) discovered", fragments.len());
 }

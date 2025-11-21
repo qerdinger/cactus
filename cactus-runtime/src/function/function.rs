@@ -1,5 +1,5 @@
 use crate::discovery::lang::Lang;
-use crate::functions::argument::Argument;
+use crate::function::argument::Argument;
 
 #[derive(Debug)]
 pub struct Function {
