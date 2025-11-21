@@ -1,0 +1,23 @@
+name: Build Cactus Runtime
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  MANIFEST_PATH: cactus-runtime/Cargo.toml
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --manifest-path $MANIFEST_PATH --verbose
+    - name: Run tests
+      run: cargo test --manifest-path $MANIFEST_PATH --verbose
