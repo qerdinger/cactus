@@ -24,7 +24,8 @@ fn main() {
     let disc = Discover();
     let functions = disc.lookup();
 
+    info!("{} function(s) discovered", functions.len());
     for fnc in functions {
-        info!("function name=[{}] [{:?}] discovered !", fnc.name(), fnc.lang());
+        info!("> [{:?}]", fnc);
     }
 }

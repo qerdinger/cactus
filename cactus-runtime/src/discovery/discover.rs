@@ -8,7 +8,8 @@ impl Discover {
         vec![
             Function::new(
                 "main".to_owned(), Some(Lang::new(Language::C)), vec![]
-            )
+            ),
+            Function::new("name".to_owned(), None, vec![])
         ]
     }
 }

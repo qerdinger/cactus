@@ -1,6 +1,7 @@
 use crate::discovery::lang::Lang;
 use crate::functions::argument::Argument;
 
+#[derive(Debug)]
 pub struct Function {
     name: String,
     lang: Option<Lang>,
