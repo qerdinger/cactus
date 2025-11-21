@@ -10,5 +10,15 @@ pub enum Language {
 
 #[derive(Debug)]
 pub struct Lang {
-    pub lang: Language,
+    lang: Language,
+}
+
+impl Lang {
+    pub fn new(lang: Language) -> Lang {
+        Self { lang }
+    }
+    
+    pub fn lang(&self) -> &Language {
+        &self.lang
+    }
 }

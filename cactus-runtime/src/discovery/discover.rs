@@ -6,11 +6,9 @@ pub struct Discover ();
 impl Discover {
     pub fn lookup(&self) -> Vec<Function> {
         vec![
-            Function {
-                name: "main".to_owned(),
-                lang: Some(Lang { lang: Language::C }),
-                args: vec![]
-            },
+            Function::new(
+                "main".to_owned(), Some(Lang::new(Language::C)), vec![]
+            )
         ]
     }
 }
