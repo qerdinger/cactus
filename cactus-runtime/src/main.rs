@@ -5,6 +5,8 @@ use tracing_subscriber::FmtSubscriber;
 mod discovery;
 mod function;
 mod fragment;
+mod lang;
+
 use crate::discovery::discover::Discover;
 use crate::discovery::lang::{Lang, Language};
 use crate::function::function::Function;
