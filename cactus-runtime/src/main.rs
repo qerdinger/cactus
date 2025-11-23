@@ -27,7 +27,12 @@ fn main() {
     let fragments = disc.lookup();
 
     info!("{} fragment(s) discovered", fragments.len());
-    for fragment in fragments {
+    for mut fragment in fragments {
         info!("{}", fragment.name());
+        info!("Extracting function(s)...");
+        fragment.extract();
+        if let Some(x) = fragment.functions() {
+            info!("{:?}", x);
+        }
     }
 }

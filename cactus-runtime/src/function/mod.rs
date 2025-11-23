@@ -1,2 +1,2 @@
 pub mod function;
-mod argument;
+pub mod argument;
