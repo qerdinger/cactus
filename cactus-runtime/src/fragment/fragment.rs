@@ -33,7 +33,7 @@ impl Fragment {
         }
 
         let reader = LangSelector::get_language_reader(&self);
-        self.functions = Some(reader.extract());
+        self.functions = Some(reader.extract(&self));
 
     }
 }

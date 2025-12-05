@@ -1,4 +1,6 @@
+use std::fs::write;
 use crate::discovery::lang::{Lang, Language};
+use crate::fragment::fragment::Fragment;
 use crate::function::argument::Argument;
 use crate::function::function::Function;
 use crate::lang::lang_reader::LangReader;
@@ -6,7 +8,15 @@ use crate::lang::lang_reader::LangReader;
 pub struct PythonReader;
 
 impl LangReader for PythonReader {
-    fn extract(&self) -> Vec<Function> {
+    fn extract(&self, fragment: &Fragment) -> Vec<Function> {
+        let fnc_indexes: Vec<usize> = fragment
+            .raw_data()
+            .match_indices("def")
+            .map(|(i, _)|i)
+            .collect();
+
+        println!("{:?}", fnc_indexes);
+
         vec![
             Function::new("entrypoint".to_owned(), Some(Lang::new(Language::Python)), vec![
                 Argument::new("input1".to_owned(), None),

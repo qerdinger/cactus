@@ -8,7 +8,8 @@ impl Discover {
     pub fn lookup(&self) -> Vec<Fragment> {
         vec![
             Fragment::new("serverless.py".to_owned(),
-                "def entrypoint():\
+                "#Basic cactus entrypoint\
+                def entrypoint():\
                     return 'Hello'".to_owned())
         ]
     }
