@@ -9,7 +9,7 @@ impl Discover {
         vec![
             Fragment::new("serverless.py".to_owned(),
                 "#Basic cactus entrypoint\
-                def entrypoint(arg1, arg2):\
+                def entrypoint():\
                     return 'Hello'".to_owned())
         ]
     }

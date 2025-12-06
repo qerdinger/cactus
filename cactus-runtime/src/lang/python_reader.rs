@@ -1,4 +1,5 @@
 use std::fs::write;
+use std::slice::from_raw_parts_mut;
 use crate::discovery::lang::{Lang, Language};
 use crate::fragment::fragment::Fragment;
 use crate::function::argument::Argument;
@@ -61,22 +62,21 @@ impl LangReader for PythonReader {
             .map(|(i, _)|i)
             .collect();
 
-        println!("{:?}", fnc_indexes);
         let content_size: usize = fragment.raw_data().chars().count();
 
         let functions: Vec<_> = fnc_indexes.iter().map(|x| {
-            (
+            if let (Some(name), Some(args)) = (
                 Self::convert_idx_to_function_name(fragment.raw_data(), content_size, *x),
                 Self::convert_idx_to_arguments(fragment.raw_data(), content_size, *x)
-            )
+            ) {
+                return Function::new(
+                    name,
+                    None,
+                    args
+                )
+            }
+            panic!("[{}]: Error thrown whilst parsing.", fragment.name());
         }).collect();
-
-        eprintln!("functions: {:?}", functions);
-
-        vec![
-            Function::new("entrypoint".to_owned(), Some(Lang::new(Language::Python)), vec![
-                Argument::new("input1".to_owned(), None),
-            ])
-        ]
+        functions
     }
 }
