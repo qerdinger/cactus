@@ -10,7 +10,15 @@ impl Discover {
             Fragment::new("serverless.py".to_owned(),
                 "#Basic cactus entrypoint\
                 def entrypoint(arg1, arg2):\
-                    return 'Hello'".to_owned())
+                    return 'Hello'\
+                \
+                def say_hello():\
+                    return 'Hello'\
+                def get_version(method):\
+                    return 'Latest'\
+                \
+                \
+                ".to_owned())
         ]
     }
 }
