@@ -6,7 +6,8 @@ use crate::function::argument::Argument;
 use crate::function::function::Function;
 use crate::lang::lang_reader::LangReader;
 
-const FUNCDECL_LENGTH: usize = 3;
+const FUNCDECL_KEYWORD: &str = "def";
+const FUNCDECL_LENGTH: usize = FUNCDECL_KEYWORD.len();
 const SPACE_LENGTH: usize = 1;
 const ARGUMENT_SEPARATOR: char = ',';
 
@@ -58,7 +59,7 @@ impl LangReader for PythonReader {
     fn extract(&self, fragment: &Fragment) -> Vec<Function> {
         let fnc_indexes: Vec<usize> = fragment
             .raw_data()
-            .match_indices("def")
+            .match_indices(FUNCDECL_KEYWORD)
             .map(|(i, _)|i)
             .collect();
 
