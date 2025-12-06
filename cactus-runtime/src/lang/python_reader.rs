@@ -29,7 +29,7 @@ impl PythonReader {
         None
     }
 
-    fn convert_idx_to_arguments(s : &str, s_len: usize, s_at: usize) -> Option<Argument> {
+    fn convert_idx_to_arguments(s : &str, s_len: usize, s_at: usize) -> Option<Vec<Argument>> {
         let mut l_parenthesis: Option<usize> = None;
         let mut r_parenthesis: Option<usize> = None;
 
@@ -44,13 +44,12 @@ impl PythonReader {
             return None;
         }
 
-        for (i, c) in s[l_parenthesis.unwrap() + SPACE_LENGTH .. r_parenthesis.unwrap()]
+        Some(s[l_parenthesis.unwrap() + SPACE_LENGTH .. r_parenthesis.unwrap()]
             .split(ARGUMENT_SEPARATOR)
             .map(|x| x.replace(" ", ""))
-            .enumerate() {
-            println!("{}", c);
-        }
-        None
+            .map(|x| Argument::new(x, None))
+            .collect()
+        )
     }
 }
 
