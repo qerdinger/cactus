@@ -13,6 +13,10 @@ Output: String
 def authenticate():
     return True
 
+@wattr()
+def simple_entrypoint():
+    return f"Hello World from {simple_entrypoint}"
+
 @wattr(
     auth=authenticate,
     protocol=ApiProtocol.HTTP,
@@ -20,4 +24,15 @@ def authenticate():
 def entrypoint():
     return "Hello World"
 
+@wattr()
+def en_lang():
+    print("English")
+
+@wattr()
+def fr_lang():
+    print("French")
+
+print(simple_entrypoint().get_payload())
 print(entrypoint())
+print(en_lang())
+print(fr_lang())
