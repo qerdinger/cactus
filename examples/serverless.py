@@ -32,7 +32,7 @@ def en_lang():
 def fr_lang():
     print("French")
 
-print(simple_entrypoint().get_payload())
+print(simple_entrypoint().get_status_code(), simple_entrypoint().get_payload())
 print(entrypoint())
 print(en_lang())
 print(fr_lang())
