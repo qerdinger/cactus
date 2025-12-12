@@ -12,11 +12,11 @@ import sys
 
 DELIMITER = ";"
 SIZE_TYPE = int
-STATUS_TYPE = int
 PAYLOAD_TYPE = dict | str
 
 class HttpStatus(Enum):
-    HTTP_OK = 200
+    HTTP_OK = 200,
+    HTTP_NOT_FOUND = 404
 
 class ApiProtocol(Enum):
     HTTP = 0
@@ -27,7 +27,7 @@ class ApiMethod(Enum):
     POST = 1
 
 class CactusResponse:
-    def __init__(self, payload : PAYLOAD_TYPE, status_code : STATUS_TYPE):
+    def __init__(self, payload : PAYLOAD_TYPE, status_code : HttpStatus):
         self._payload = payload
         self._status_code = status_code
         self._timestamp = tm.time()
@@ -55,7 +55,7 @@ class CactusResponse:
             return hash(frozenset(self._payload.items()))
         return hash(self.get_payload())
 
-    def get_status_code(self) -> STATUS_TYPE:
+    def get_status_code(self) -> HttpStatus:
         return self._status_code
 
     def get_timestamp(self) -> tm.time:
@@ -71,8 +71,8 @@ def auth_required(auth_mthd : object) -> bool:
     
     return not auth_mthd()
 
-def make_res(x : PAYLOAD_TYPE):
-    return CactusResponse(x, HttpStatus.HTTP_OK)
+def make_res(x : PAYLOAD_TYPE, status_code=HttpStatus.HTTP_OK) -> CactusResponse:
+    return CactusResponse(x, status_code)
 
 """
 Cactus Web Handler
@@ -94,7 +94,13 @@ def wattr(
         def wrapper(*args, **kwargs):
             if auth_required(auth):
                 return "Authentification required"
-            return make_res(func(*args, **kwargs))
+            res = func(*args, **kwargs)
+            if isinstance(res, PAYLOAD_TYPE):
+                return make_res(res)
+            elif isinstance(res, tuple) and isinstance(res[0], int) and isinstance(res[1], PAYLOAD_TYPE):
+                return make_res(res[1], status_code=res[0])
+            else:
+                raise Exception(f"Signature not supported [{res}]")
         return wrapper
 
     return decorator
