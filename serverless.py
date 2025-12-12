@@ -21,9 +21,9 @@ def simple_entrypoint():
     auth=authenticate,
     protocol=ApiProtocol.HTTP,
     method=ApiMethod.GET)
-def entrypoint():
+def entrypoint(name):
     return (HttpStatus.HTTP_CUSTOM(201), {
-        "content": "Hello World"
+        "content": f"Hello {name}"
     })
 
 @wattr()
@@ -46,7 +46,7 @@ def access_denied():
 
 #print(simple_entrypoint().get_status_code(), simple_entrypoint().get_payload())
 #print(entrypoint().get_payload())
-print("EP:", entrypoint())
+print("EP:", entrypoint("Bob"))
 #print(simple_entrypoint().get_payload())
 print("SE:", simple_entrypoint())
 print("EN:", en_lang())
@@ -54,7 +54,7 @@ print("FR:", fr_lang())
 print("NF:", not_found())
 print("AD:", access_denied())
 
-rslt = entrypoint()
+rslt = entrypoint("Patrick")
 print(rslt)
 print(rslt.get_payload())
 print(rslt.get_status_code())
