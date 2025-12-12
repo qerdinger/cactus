@@ -11,6 +11,7 @@ import time as tm
 import sys
 
 DELIMITER = ";"
+PAYLOAD_TYPE = dict | str
 
 class HttpStatus(Enum):
     HTTP_OK = 200
@@ -24,7 +25,7 @@ class ApiMethod(Enum):
     POST = 1
 
 class CactusResponse:
-    def __init__(self, payload : any, status_code : int):
+    def __init__(self, payload : PAYLOAD_TYPE, status_code : int):
         self._payload = payload
         self._status_code = status_code
         self._timestamp = tm.time()
@@ -49,6 +50,8 @@ class CactusResponse:
         return sys.getsizeof(self)
 
     def get_payload_hash(self) -> int:
+        if isinstance(self._payload, dict):
+            return hash(frozenset(self._payload.items()))
         return hash(self.get_payload())
 
     def get_status_code(self) -> int:
@@ -67,7 +70,7 @@ def auth_required(auth_mthd : object):
     
     return not auth_mthd()
 
-def make_res(x : object):
+def make_res(x : PAYLOAD_TYPE):
     return CactusResponse(x, HttpStatus.HTTP_OK)
 
 """

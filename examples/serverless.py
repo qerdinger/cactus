@@ -22,7 +22,9 @@ def simple_entrypoint():
     protocol=ApiProtocol.HTTP,
     method=ApiMethod.GET)
 def entrypoint():
-    return "Hello World"
+    return {
+        "content": "Hello World"
+    }
 
 @wattr()
 def en_lang():
@@ -32,7 +34,10 @@ def en_lang():
 def fr_lang():
     print("French")
 
-print(simple_entrypoint().get_status_code(), simple_entrypoint().get_payload())
+#print(simple_entrypoint().get_status_code(), simple_entrypoint().get_payload())
+print(entrypoint().get_payload())
 print(entrypoint())
-print(en_lang())
-print(fr_lang())
+print(simple_entrypoint().get_payload())
+print(simple_entrypoint())
+#print(en_lang())
+#print(fr_lang())
