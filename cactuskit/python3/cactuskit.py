@@ -51,7 +51,7 @@ class CactusResponse:
             f"PSize={self.get_payload_size()}b",
             f"PHash={self.get_payload_hash()}",
             f"Size={self.get_size()}b",
-            f"Time={self.get_timestamp()}"
+            f"Time={self.get_timestamp():.3f}"
         ])
 
     def get_payload(self) -> PAYLOAD_TYPE:
@@ -63,7 +63,7 @@ class CactusResponse:
     def get_size(self) -> SIZE_TYPE:
         return sys.getsizeof(self)
 
-    def get_payload_hash(self) -> SIZE_TYPE:
+    def get_payload_hash(self) -> int:
         if isinstance(self._payload, dict):
             return hash(frozenset(self._payload.items()))
         return hash(self.get_payload())
