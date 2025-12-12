@@ -29,6 +29,16 @@ class CactusResponse:
         self._status_code = status_code
         self._timestamp = tm.time()
 
+    def __repr__(self):
+        s = [
+            f"Time={self.get_timestamp()}",
+            f"Status={self.get_status_code()}",
+            f"PSize={self.get_payload_size()}b",
+            f"PHash={self.get_payload_hash()}",
+            f"Size={self.get_size()}b",
+        ]
+        return DELIMITER.join(s)
+
     def get_payload(self) -> any:
         return self._payload
 
@@ -47,15 +57,6 @@ class CactusResponse:
     def get_timestamp(self) -> tm.time:
         return self._timestamp
 
-    def __repr__(self):
-        s = [
-            f"Time={self.get_timestamp()}",
-            f"Status={self.get_status_code()}",
-            f"PSize={self.get_payload_size()}b",
-            f"PHash={self.get_payload_hash()}",
-            f"Size={self.get_size()}b",
-        ]
-        return DELIMITER.join(s)
 
 def is_initialised() -> bool:
     True
