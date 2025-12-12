@@ -6,7 +6,7 @@ Licensed under MIT - qerdinger @ 2025
 Hosted on GitHub : https://github.com/qerdinger/cactus
 """
 
-from enum import Enum
+from enum import Enum, IntEnum
 import time as tm
 import sys
 
@@ -14,9 +14,22 @@ DELIMITER = ";"
 SIZE_TYPE = int
 PAYLOAD_TYPE = dict | str
 
-class HttpStatus(Enum):
+class HttpStatus(IntEnum):
     HTTP_OK = 200,
-    HTTP_NOT_FOUND = 404
+    HTTP_NOT_FOUND = 404,
+    
+    @classmethod
+    def HTTP_CUSTOM(cls, code):
+        return cls(code)
+    
+    @classmethod
+    def _missing_(cls, value):
+        obj = int.__new__(cls, value)
+        obj._name_ = f"HTTP_CUSTOM_{value}"
+        obj._value_ = value
+        return obj
+    
+    
 
 class ApiProtocol(Enum):
     HTTP = 0
@@ -34,11 +47,11 @@ class CactusResponse:
 
     def __repr__(self):
         return DELIMITER.join([
-            f"Time={self.get_timestamp()}",
             f"Status={self.get_status_code()}",
             f"PSize={self.get_payload_size()}b",
             f"PHash={self.get_payload_hash()}",
             f"Size={self.get_size()}b",
+            f"Time={self.get_timestamp()}"
         ])
 
     def get_payload(self) -> PAYLOAD_TYPE:
@@ -97,7 +110,7 @@ def wattr(
             res = func(*args, **kwargs)
             if isinstance(res, PAYLOAD_TYPE):
                 return make_res(res)
-            elif isinstance(res, tuple) and isinstance(res[0], int) and isinstance(res[1], PAYLOAD_TYPE):
+            elif isinstance(res, tuple) and isinstance(res[0], HttpStatus) and isinstance(res[1], PAYLOAD_TYPE):
                 return make_res(res[1], status_code=res[0])
             else:
                 raise Exception(f"Signature not supported [{res}]")
