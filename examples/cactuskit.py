@@ -11,6 +11,8 @@ import time as tm
 import sys
 
 DELIMITER = ";"
+SIZE_TYPE = int
+STATUS_TYPE = int
 PAYLOAD_TYPE = dict | str
 
 class HttpStatus(Enum):
@@ -25,7 +27,7 @@ class ApiMethod(Enum):
     POST = 1
 
 class CactusResponse:
-    def __init__(self, payload : PAYLOAD_TYPE, status_code : int):
+    def __init__(self, payload : PAYLOAD_TYPE, status_code : STATUS_TYPE):
         self._payload = payload
         self._status_code = status_code
         self._timestamp = tm.time()
@@ -39,21 +41,21 @@ class CactusResponse:
             f"Size={self.get_size()}b",
         ])
 
-    def get_payload(self) -> any:
+    def get_payload(self) -> PAYLOAD_TYPE:
         return self._payload
 
-    def get_payload_size(self) -> int:
+    def get_payload_size(self) -> SIZE_TYPE:
         return sys.getsizeof(self.get_payload())
 
-    def get_size(self) -> int:
+    def get_size(self) -> SIZE_TYPE:
         return sys.getsizeof(self)
 
-    def get_payload_hash(self) -> int:
+    def get_payload_hash(self) -> SIZE_TYPE:
         if isinstance(self._payload, dict):
             return hash(frozenset(self._payload.items()))
         return hash(self.get_payload())
 
-    def get_status_code(self) -> int:
+    def get_status_code(self) -> STATUS_TYPE:
         return self._status_code
 
     def get_timestamp(self) -> tm.time:
@@ -63,7 +65,7 @@ class CactusResponse:
 def is_initialised() -> bool:
     True
 
-def auth_required(auth_mthd : object):
+def auth_required(auth_mthd : object) -> bool:
     if auth_mthd is None:
         return False
     
