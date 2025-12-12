@@ -31,14 +31,13 @@ class CactusResponse:
         self._timestamp = tm.time()
 
     def __repr__(self):
-        s = [
+        return DELIMITER.join([
             f"Time={self.get_timestamp()}",
             f"Status={self.get_status_code()}",
             f"PSize={self.get_payload_size()}b",
             f"PHash={self.get_payload_hash()}",
             f"Size={self.get_size()}b",
-        ]
-        return DELIMITER.join(s)
+        ])
 
     def get_payload(self) -> any:
         return self._payload

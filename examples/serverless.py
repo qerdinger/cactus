@@ -29,15 +29,22 @@ def entrypoint():
 @wattr()
 def en_lang():
     print("English")
+    return "English"
 
 @wattr()
 def fr_lang():
     print("French")
+    return "French"
 
 #print(simple_entrypoint().get_status_code(), simple_entrypoint().get_payload())
-print(entrypoint().get_payload())
-print(entrypoint())
-print(simple_entrypoint().get_payload())
-print(simple_entrypoint())
+#print(entrypoint().get_payload())
+#print(entrypoint())
+#print(simple_entrypoint().get_payload())
+#print(simple_entrypoint())
 #print(en_lang())
 #print(fr_lang())
+
+rslt = entrypoint()
+print(rslt)
+print(rslt.get_payload())
+print(rslt.get_status_code())
