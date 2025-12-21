@@ -1,24 +1,22 @@
-use crate::discovery::lang::{Lang, Language};
-use crate::function::function::Function;
+use std::fs;
+
 use crate::fragment::fragment::Fragment;
 
 pub struct Discover ();
 
 impl Discover {
     pub fn lookup(&self) -> Vec<Fragment> {
-        vec![
-            Fragment::new("serverless.py".to_owned(),
-                "#Basic cactus entrypoint\
-                def entrypoint(arg1, arg2):\
-                    return 'Hello'\
-                \
-                def say_hello():\
-                    return 'Hello'\
-                def get_version(method):\
-                    return 'Latest'\
-                \
-                \
-                ".to_owned())
-        ]
+        let file_content = fs::read_to_string("../serverless.py");
+
+        match file_content {
+            Ok(content) => {
+                vec![
+                    Fragment::new("serverless.py".to_owned(), content)
+                ]
+            },
+            Err(err) => {
+                panic!("{:?}", err);
+            }
+        }
     }
 }
