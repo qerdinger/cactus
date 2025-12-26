@@ -37,7 +37,9 @@ fn main() {
         info!("Extracting function(s)...");
         fragment.extract();
         if let Some(x) = fragment.functions() {
-            info!("{:?}", x);
+            for function in x {
+                info!("{:?}", function);
+            }
         }
     }
 

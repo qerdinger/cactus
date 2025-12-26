@@ -20,7 +20,7 @@ impl PythonReader {
         }
 
         for (i, c) in s[s_at + FUNCDECL_LENGTH + SPACE_LENGTH..].chars().enumerate() {
-            if (c == '(') {
+            if c == '(' {
                 return Some(
                     String::from(
                         &s[s_at + FUNCDECL_LENGTH + SPACE_LENGTH..s_at + FUNCDECL_LENGTH + SPACE_LENGTH + i]
