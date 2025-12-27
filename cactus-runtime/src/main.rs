@@ -15,6 +15,9 @@ use crate::discovery::discover::Discover;
 use crate::discovery::lang::{Lang, Language};
 use crate::function::function::Function;
 
+use crate::lang::lang_interpreter::LangInterpreter;
+use crate::lang::python_interpreter::PythonInterpreter;
+
 fn tracing_subscriber_handler(max_level: Level) {
     let subscriber = FmtSubscriber::builder()
         .with_max_level(max_level)
@@ -29,10 +32,10 @@ fn main() {
     info!("Cactus Runtime System");
 
     let disc = Discover();
-    let fragments = disc.lookup();
+    let mut fragments = disc.lookup();
 
     info!("{} fragment(s) discovered", fragments.len());
-    for mut fragment in fragments {
+    for mut fragment in &mut fragments {
         info!("{}", fragment.name());
         info!("Extracting function(s)...");
         fragment.extract();
@@ -42,6 +45,8 @@ fn main() {
             }
         }
     }
+
+    //PythonInterpreter::is_entrypoint(&fragments, &Function::new("en_lang".to_owned(), None, Vec::new()));
 
     /*
     Python::with_gil(|py| {

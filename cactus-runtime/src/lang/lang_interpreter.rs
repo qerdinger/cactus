@@ -1,7 +1,6 @@
-use crate::function::{argument::Argument, function::Function};
+use crate::{fragment::fragment::Fragment, function::{argument::Argument, function::Function}};
 
 pub trait LangInterpreter {
-    fn new(&self) -> Self;
-    fn execute(&self, function: &Function, args: &[Argument]);
-    fn is_entrypoint(&self, function: &Function) -> bool;
+    fn execute(fragments: &[Fragment], function: &Function, args: &[Argument]);
+    fn is_entrypoint(fragments: &[Fragment], function: &Function) -> bool;
 }
