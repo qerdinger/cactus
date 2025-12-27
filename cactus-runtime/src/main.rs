@@ -46,7 +46,7 @@ fn main() {
         }
     }
 
-    PythonInterpreter::is_entrypoint(&fragments, &Function::new("en_lang".to_owned(), None, Vec::new()));
+    //PythonInterpreter::is_entrypoint(&fragments, &Function::new("en_lang".to_owned(), None, Vec::new()));
 
     /*
     Python::with_gil(|py| {
