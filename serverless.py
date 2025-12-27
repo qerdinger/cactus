@@ -2,7 +2,7 @@
 
 # cactuskit.core
 # cactuskit.protocol
-from cactuskit.python3.cactuskit import ApiMethod, ApiProtocol, HttpStatus, wattr
+from cactuskit import ApiMethod, ApiProtocol, HttpStatus, wattr
 
 """
 Basic Entrypoint
