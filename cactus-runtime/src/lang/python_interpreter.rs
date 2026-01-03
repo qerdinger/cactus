@@ -57,11 +57,23 @@ impl LangInterpreter for PythonInterpreter {
             )
                 .expect("msg");
 
-            let is_entrypoint_handler = custom_module.getattr(function.name())
-                .expect("msg");
+            info!("fetching [{}] handler...", function.name());
+            let handler = custom_module.getattr(function.name()).expect("msg");
 
-            let res: bool = is_entrypoint_handler.call1(()).expect("msg").extract().expect("msg");
-            return res;
+            info!("gathering [is_initialised] method...");
+            let is_init_method = match handler.getattr("is_initialised") {
+                Ok(m) => m,
+                Err(_) => return false,
+            };
+
+            if !is_init_method.is_callable() {
+                info!("method is_initialised not callable");
+                return false;
+            }
+
+            info!("executing is_initialised method...");
+            let result = is_init_method.call0().expect("msg");
+            result.extract::<bool>().expect("msg")
         })
     }
 }

@@ -46,7 +46,8 @@ fn main() {
         }
     }
 
-    //PythonInterpreter::is_entrypoint(&fragments, &Function::new("en_lang".to_owned(), None, Vec::new()));
+    let status = PythonInterpreter::is_entrypoint(&fragments, &Function::new("en_lang".to_owned(), None, Vec::new()));
+    info!("Status : {}", status);
 
     /*
     Python::with_gil(|py| {
