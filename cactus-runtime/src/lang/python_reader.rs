@@ -1,6 +1,3 @@
-use std::fs::write;
-use std::slice::from_raw_parts_mut;
-use crate::discovery::lang::{Lang, Language};
 use crate::fragment::fragment::Fragment;
 use crate::function::argument::Argument;
 use crate::function::function::Function;
@@ -14,7 +11,7 @@ const ARGUMENT_SEPARATOR: char = ',';
 pub struct PythonReader;
 
 impl PythonReader {
-    fn convert_idx_to_function_name(s :&str, s_len: usize, s_at: usize) -> Option<String> {
+    fn convert_idx_to_function_name(s: &str, s_len: usize, s_at: usize) -> Option<String> {
         if s_at + FUNCDECL_LENGTH + SPACE_LENGTH >= s_len {
             return None;
         }
@@ -31,14 +28,17 @@ impl PythonReader {
         None
     }
 
-    fn convert_idx_to_arguments(s : &str, s_len: usize, s_at: usize) -> Option<Vec<Argument>> {
+    fn convert_idx_to_arguments(s: &str, s_len: usize, s_at: usize) -> Option<Vec<Argument>> {
         let mut l_parenthesis: Option<usize> = None;
         let mut r_parenthesis: Option<usize> = None;
 
         for (i, c) in s[s_at..].chars().enumerate() {
             match c {
                 '(' => l_parenthesis = Some(s_at + i),
-                ')' => {r_parenthesis = Some(s_at + i); break;},
+                ')' => {
+                    r_parenthesis = Some(s_at + i);
+                    break;
+                }
                 _ => {}
             }
         }
@@ -46,7 +46,7 @@ impl PythonReader {
             return None;
         }
 
-        Some(s[l_parenthesis.unwrap() + SPACE_LENGTH .. r_parenthesis.unwrap()]
+        Some(s[l_parenthesis.unwrap() + SPACE_LENGTH..r_parenthesis.unwrap()]
             .split(ARGUMENT_SEPARATOR)
             .map(|x| x.replace(" ", ""))
             .map(|x| Argument::new(x, None))
@@ -60,7 +60,7 @@ impl LangReader for PythonReader {
         let fnc_indexes: Vec<usize> = fragment
             .raw_data()
             .match_indices(FUNCDECL_KEYWORD)
-            .map(|(i, _)|i)
+            .map(|(i, _)| i)
             .collect();
 
         let content_size: usize = fragment.raw_data().chars().count();
@@ -73,8 +73,8 @@ impl LangReader for PythonReader {
                 return Function::new(
                     name,
                     None,
-                    args
-                )
+                    args,
+                );
             }
             panic!("[{}]: Error thrown whilst parsing.", fragment.name());
         }).collect();

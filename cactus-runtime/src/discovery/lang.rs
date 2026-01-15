@@ -1,11 +1,9 @@
-use std::fmt::Display;
-
 #[derive(Debug)]
 pub enum Language {
     C,
     Cpp,
     Python,
-    Java
+    Java,
 }
 
 #[derive(Debug)]
@@ -17,7 +15,7 @@ impl Lang {
     pub fn new(lang: Language) -> Lang {
         Self { lang }
     }
-    
+
     pub fn lang(&self) -> &Language {
         &self.lang
     }

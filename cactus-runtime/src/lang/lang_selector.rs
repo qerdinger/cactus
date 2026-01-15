@@ -6,7 +6,7 @@ use crate::lang::python_reader::PythonReader;
 pub struct LangSelector;
 
 impl LangSelector {
-    fn get_language(raw_data : &str) -> Lang {
+    fn get_language(raw_data: &str) -> Lang {
         Lang::new(Language::Python)
     }
 

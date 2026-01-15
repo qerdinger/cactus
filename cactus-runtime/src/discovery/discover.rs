@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::fragment::fragment::Fragment;
 
-pub struct Discover ();
+pub struct Discover();
 
 impl Discover {
     pub fn lookup(&self) -> Vec<Fragment> {
@@ -13,7 +13,7 @@ impl Discover {
                 vec![
                     Fragment::new("serverless.py".to_owned(), content)
                 ]
-            },
+            }
             Err(err) => {
                 panic!("{:?}", err);
             }
