@@ -2,34 +2,45 @@
 The Cactus Library
 
 Licensed under MIT - qerdinger @ 2025
-
 Hosted on GitHub : https://github.com/qerdinger/cactus
 """
 
 from enum import Enum, IntEnum
+from functools import wraps
 import time as tm
 import sys
+from typing import Union, Dict
+
+# ---------------------------------------------------------------------
+# Constants & Types
+# ---------------------------------------------------------------------
 
 DELIMITER = ";"
 SIZE_TYPE = int
-PAYLOAD_TYPE = dict | str
+PAYLOAD_TYPE = Union[Dict, str]
+
+# ---------------------------------------------------------------------
+# HTTP Status
+# ---------------------------------------------------------------------
 
 class HttpStatus(IntEnum):
-    HTTP_OK = 200,
-    HTTP_NOT_FOUND = 404,
-    
+    HTTP_OK = 200
+    HTTP_NOT_FOUND = 404
+
     @classmethod
-    def HTTP_CUSTOM(cls, code):
+    def HTTP_CUSTOM(cls, code: int) -> "HttpStatus":
         return cls(code)
-    
+
     @classmethod
-    def _missing_(cls, value):
+    def _missing_(cls, value: int) -> "HttpStatus":
         obj = int.__new__(cls, value)
         obj._name_ = f"HTTP_CUSTOM_{value}"
         obj._value_ = value
         return obj
-    
-    
+
+# ---------------------------------------------------------------------
+# API Protocol & Method
+# ---------------------------------------------------------------------
 
 class ApiProtocol(Enum):
     HTTP = 0
@@ -39,13 +50,17 @@ class ApiMethod(Enum):
     GET = 0
     POST = 1
 
+# ---------------------------------------------------------------------
+# Response Object
+# ---------------------------------------------------------------------
+
 class CactusResponse:
-    def __init__(self, payload : PAYLOAD_TYPE, status_code : HttpStatus):
+    def __init__(self, payload: PAYLOAD_TYPE, status_code: HttpStatus):
         self._payload = payload
         self._status_code = status_code
         self._timestamp = tm.time()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return DELIMITER.join([
             f"Status={self.get_status_code()}",
             f"PSize={self.get_payload_size()}b",
@@ -58,7 +73,7 @@ class CactusResponse:
         return self._payload
 
     def get_payload_size(self) -> SIZE_TYPE:
-        return sys.getsizeof(self.get_payload())
+        return sys.getsizeof(self._payload)
 
     def get_size(self) -> SIZE_TYPE:
         return sys.getsizeof(self)
@@ -66,54 +81,76 @@ class CactusResponse:
     def get_payload_hash(self) -> int:
         if isinstance(self._payload, dict):
             return hash(frozenset(self._payload.items()))
-        return hash(self.get_payload())
+        return hash(self._payload)
 
     def get_status_code(self) -> HttpStatus:
         return self._status_code
 
-    def get_timestamp(self) -> tm.time:
+    def get_timestamp(self) -> float:
         return self._timestamp
 
+# ---------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------
 
-def is_initialised() -> bool:
-    True
-
-def auth_required(auth_mthd : object) -> bool:
+def auth_required(auth_mthd) -> bool:
+    """
+    Returns True if authentication is required and failed.
+    """
     if auth_mthd is None:
         return False
-    
-    return not auth_mthd()
+    return not bool(auth_mthd())
 
-def make_res(x : PAYLOAD_TYPE, status_code=HttpStatus.HTTP_OK) -> CactusResponse:
-    return CactusResponse(x, status_code)
+def make_res(payload: PAYLOAD_TYPE,
+             status_code: HttpStatus = HttpStatus.HTTP_OK) -> CactusResponse:
+    return CactusResponse(payload, status_code)
 
-"""
-Cactus Web Handler
-"""
+# ---------------------------------------------------------------------
+# Web Handler Decorator
+# ---------------------------------------------------------------------
+
 def wattr(
-    protocol=ApiMethod.GET,
-    method=ApiProtocol.HTTP,
-
+    protocol: ApiProtocol = ApiProtocol.HTTP,
+    method: ApiMethod = ApiMethod.GET,
     auth=None,
     middleware=None
-    ):
-
-    def init_declaration(f : object):
-        f._is_declared = True
+):
+    """
+    Declares a function as a Cactus entrypoint.
+    Metadata is attached to the exported callable (wrapper).
+    """
 
     def decorator(func):
-        init_declaration(func)
 
+        @wraps(func)
         def wrapper(*args, **kwargs):
             if auth_required(auth):
-                return "Authentification required"
-            res = func(*args, **kwargs)
-            if isinstance(res, PAYLOAD_TYPE):
-                return make_res(res)
-            elif isinstance(res, tuple) and isinstance(res[0], HttpStatus) and isinstance(res[1], PAYLOAD_TYPE):
-                return make_res(res[1], status_code=res[0])
-            else:
-                raise Exception(f"Signature not supported [{res}]")
+                return "Authentication required"
+
+            result = func(*args, **kwargs)
+
+            if isinstance(result, PAYLOAD_TYPE):
+                return make_res(result)
+
+            if (
+                isinstance(result, tuple)
+                and len(result) == 2
+                and isinstance(result[0], HttpStatus)
+                and isinstance(result[1], PAYLOAD_TYPE)
+            ):
+                return make_res(result[1], status_code=result[0])
+
+            raise TypeError(f"Unsupported handler signature: {result!r}")
+
+        wrapper._is_declared = True
+
+        wrapper._cactus = {
+            "protocol": protocol,
+            "method": method,
+            "auth": auth is not None,
+            "middleware": middleware is not None,
+        }
+
         return wrapper
 
     return decorator
