@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub struct Argument {
     name: String,
-    primitive: Option<String>
+    primitive: Option<String>,
 }
 
 impl Argument {

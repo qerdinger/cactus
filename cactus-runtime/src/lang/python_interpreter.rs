@@ -1,21 +1,18 @@
-use pyo3::Python;
 use pyo3::types::{PyAnyMethods, PyModule};
+use pyo3::Python;
 use tracing::info;
-use tracing_subscriber::fmt::format;
 
 use crate::fragment::fragment::Fragment;
 use crate::function::argument::Argument;
 use crate::function::function::Function;
 use crate::lang::lang_interpreter::LangInterpreter;
 
-use std::path::PathBuf;
 use std::ffi::CString;
 
 pub struct PythonInterpreter;
 
 impl LangInterpreter for PythonInterpreter {
-    fn execute(fragments: &[Fragment], function: &Function, args: &[Argument]) {
-    }
+    fn execute(fragments: &[Fragment], function: &Function, args: &[Argument]) {}
 
     fn is_entrypoint(fragments: &[Fragment], function: &Function) -> bool {
         Python::with_gil(|py| {
