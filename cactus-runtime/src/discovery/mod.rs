@@ -1,2 +1,2 @@
-pub mod lang;
 pub mod discover;
+pub mod lang;
