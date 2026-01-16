@@ -9,8 +9,12 @@ pub struct Fragment {
 }
 
 impl Fragment {
-    pub fn new(name: String, raw_data: String) -> Fragment {
-        Self { name, raw_data, functions: None }
+    pub fn new(name: String, raw_data: String) -> Self {
+        Self {
+            name,
+            raw_data,
+            functions: None,
+        }
     }
 
     pub fn name(&self) -> &str {
@@ -21,10 +25,18 @@ impl Fragment {
         &self.raw_data
     }
 
-    pub fn functions(&self) -> Option<&[Function]> {
+    pub fn functions(&mut self) -> Option<&[Function]> {
+        self.extract();
         if let Some(functions) = &self.functions {
             Some(functions)
-        } else { None }
+        } else {
+            None
+        }
+    }
+
+    pub fn functions_mut(&mut self) -> Option<&mut Vec<Function>> {
+        self.extract();
+        self.functions.as_mut()
     }
 
     pub fn extract(&mut self) {

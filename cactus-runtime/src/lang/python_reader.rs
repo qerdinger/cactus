@@ -16,13 +16,15 @@ impl PythonReader {
             return None;
         }
 
-        for (i, c) in s[s_at + FUNCDECL_LENGTH + SPACE_LENGTH..].chars().enumerate() {
+        for (i, c) in s[s_at + FUNCDECL_LENGTH + SPACE_LENGTH..]
+            .chars()
+            .enumerate()
+        {
             if c == '(' {
-                return Some(
-                    String::from(
-                        &s[s_at + FUNCDECL_LENGTH + SPACE_LENGTH..s_at + FUNCDECL_LENGTH + SPACE_LENGTH + i]
-                    )
-                );
+                return Some(String::from(
+                    &s[s_at + FUNCDECL_LENGTH + SPACE_LENGTH
+                        ..s_at + FUNCDECL_LENGTH + SPACE_LENGTH + i],
+                ));
             }
         }
         None
@@ -46,11 +48,12 @@ impl PythonReader {
             return None;
         }
 
-        Some(s[l_parenthesis.unwrap() + SPACE_LENGTH..r_parenthesis.unwrap()]
-            .split(ARGUMENT_SEPARATOR)
-            .map(|x| x.replace(" ", ""))
-            .map(|x| Argument::new(x, None))
-            .collect()
+        Some(
+            s[l_parenthesis.unwrap() + SPACE_LENGTH..r_parenthesis.unwrap()]
+                .split(ARGUMENT_SEPARATOR)
+                .map(|x| x.replace(" ", ""))
+                .map(|x| Argument::new(x, None))
+                .collect(),
         )
     }
 }
@@ -65,19 +68,18 @@ impl LangReader for PythonReader {
 
         let content_size: usize = fragment.raw_data().chars().count();
 
-        let functions: Vec<_> = fnc_indexes.iter().map(|x| {
-            if let (Some(name), Some(args)) = (
-                Self::convert_idx_to_function_name(fragment.raw_data(), content_size, *x),
-                Self::convert_idx_to_arguments(fragment.raw_data(), content_size, *x)
-            ) {
-                return Function::new(
-                    name,
-                    None,
-                    args,
-                );
-            }
-            panic!("[{}]: Error thrown whilst parsing.", fragment.name());
-        }).collect();
+        let functions: Vec<_> = fnc_indexes
+            .iter()
+            .map(|x| {
+                if let (Some(name), Some(args)) = (
+                    Self::convert_idx_to_function_name(fragment.raw_data(), content_size, *x),
+                    Self::convert_idx_to_arguments(fragment.raw_data(), content_size, *x),
+                ) {
+                    return Function::new(name, None, args);
+                }
+                panic!("[{}]: Error thrown whilst parsing.", fragment.name());
+            })
+            .collect();
         functions
     }
 }

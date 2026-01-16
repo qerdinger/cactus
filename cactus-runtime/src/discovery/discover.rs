@@ -10,9 +10,7 @@ impl Discover {
 
         match file_content {
             Ok(content) => {
-                vec![
-                    Fragment::new("serverless.py".to_owned(), content)
-                ]
+                vec![Fragment::new("serverless.py".to_owned(), content)]
             }
             Err(err) => {
                 panic!("{:?}", err);

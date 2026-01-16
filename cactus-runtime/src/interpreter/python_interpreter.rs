@@ -5,7 +5,7 @@ use tracing::info;
 use crate::fragment::fragment::Fragment;
 use crate::function::argument::Argument;
 use crate::function::function::Function;
-use crate::lang::lang_interpreter::LangInterpreter;
+use crate::interpreter::lang_interpreter::LangInterpreter;
 
 use std::ffi::CString;
 
@@ -32,16 +32,10 @@ impl LangInterpreter for PythonInterpreter {
                 .canonicalize()
                 .expect("msg");
 
-            path.call_method1(
-                "insert",
-                (0, cactuskit_dir.to_str().expect("msg")),
-            )
+            path.call_method1("insert", (0, cactuskit_dir.to_str().expect("msg")))
                 .expect("msg");
 
-            let codebase: String = fragments
-                .iter()
-                .map(|f| f.raw_data())
-                .collect();
+            let codebase: String = fragments.iter().map(|f| f.raw_data()).collect();
 
             let code = CString::new(codebase).expect("msg");
             let filename = CString::new("mymod.py").expect("msg");
@@ -53,7 +47,7 @@ impl LangInterpreter for PythonInterpreter {
                 filename.as_c_str(),
                 module_name.as_c_str(),
             )
-                .expect("msg");
+            .expect("msg");
 
             let handler = match custom_module.getattr(function.name()) {
                 Ok(h) => h,
