@@ -21,7 +21,7 @@ pub struct PythonInterpreter {
 const REGISTERED_PROPERTY_ID: &str = "_is_declared";
 
 const PYTHON_MOD_FILENAME: &str = "mymod";
-const PYTHON_FILENAME_EXTENTION: &str = ".py";
+const PYTHON_FILENAME_EXTENSION: &str = ".py";
 
 impl PythonInterpreter {
     pub fn is_entrypoint(&self, fragments: &[Fragment], function: &Function) -> bool {
@@ -45,7 +45,7 @@ impl PythonInterpreter {
 
         let code = CString::new(codebase).expect("invalid python code");
         let filename = CString::new(
-            format!("{}{}", PYTHON_MOD_FILENAME, PYTHON_FILENAME_EXTENTION)
+            format!("{}{}", PYTHON_MOD_FILENAME, PYTHON_FILENAME_EXTENSION)
         ).unwrap();
         let module_name = CString::new(PYTHON_MOD_FILENAME).unwrap();
 
