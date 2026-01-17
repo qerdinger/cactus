@@ -1,61 +1,125 @@
-use pyo3::types::{PyAnyMethods, PyModule};
-use pyo3::Python;
-use tracing::info;
-
-use crate::fragment::fragment::Fragment;
-use crate::function::argument::Argument;
-use crate::function::function::Function;
-use crate::interpreter::lang_interpreter::LangInterpreter;
-
 use std::ffi::CString;
 
-pub struct PythonInterpreter;
+use pyo3::types::PyAnyMethods;
+use pyo3::types::{PyAny, PyModule};
+use pyo3::Bound;
+use pyo3::{Py, Python};
+
+use crate::LangInterpreter;
+
+use crate::{
+    fragment::fragment::Fragment,
+    function::{argument::Argument, function::Function},
+};
+
+pub struct PythonInterpreter {
+    sys: Py<PyModule>,
+    path: Py<PyAny>,
+    cactuskit_path: String,
+}
+
+const REGISTERED_PROPERTY_ID: &str = "_is_declared";
+
+const PYTHON_MOD_FILENAME: &str = "mymod";
+const PYTHON_FILENAME_EXTENTION: &str = ".py";
+
+impl PythonInterpreter {
+    pub fn is_entrypoint(&self, fragments: &[Fragment], function: &Function) -> bool {
+        <Self as LangInterpreter>::is_entrypoint(self, fragments, function)
+    }
+
+    pub fn execute(&self, fragments: &[Fragment], function: &Function, args: &[Argument]) {
+        <Self as LangInterpreter>::execute(self, fragments, function, args)
+    }
+
+    pub fn new() -> Self {
+        <Self as LangInterpreter>::new()
+    }
+
+    fn build_module<'py>(
+        &self,
+        py: Python<'py>,
+        fragments: &[Fragment],
+    ) -> Bound<'py, PyModule> {
+        let codebase: String = fragments.iter().map(|f| f.raw_data()).collect();
+
+        let code = CString::new(codebase).expect("invalid python code");
+        let filename = CString::new(
+            format!("{}{}", PYTHON_MOD_FILENAME, PYTHON_FILENAME_EXTENTION)
+        ).unwrap();
+        let module_name = CString::new(PYTHON_MOD_FILENAME).unwrap();
+
+        PyModule::from_code(
+            py,
+            code.as_c_str(),
+            filename.as_c_str(),
+            module_name.as_c_str(),
+        )
+            .expect("failed to create python module")
+    }
+}
 
 impl LangInterpreter for PythonInterpreter {
-    fn execute(fragments: &[Fragment], function: &Function, args: &[Argument]) {}
-
-    fn is_entrypoint(fragments: &[Fragment], function: &Function) -> bool {
+    fn new() -> Self {
         Python::with_gil(|py| {
-            // dependencies
-            let sys = py.import("sys").expect("msg");
-            let path = sys.getattr("path").expect("msg");
+            let sys = py.import("sys").expect("sys");
+            let path = sys.getattr("path").expect("path");
 
-            info!("Integrating cactuskit...");
             let exe_dir = std::env::current_exe()
-                .expect("msg")
+                .expect("exe")
                 .parent()
-                .expect("msg")
+                .expect("exe parent")
                 .to_path_buf();
 
             let cactuskit_dir = exe_dir
                 .join("../../../cactuskit/python3")
                 .canonicalize()
-                .expect("msg");
+                .expect("cactuskit path");
 
-            path.call_method1("insert", (0, cactuskit_dir.to_str().expect("msg")))
-                .expect("msg");
+            let cactuskit_path = cactuskit_dir
+                .to_str()
+                .expect("utf-8 path")
+                .to_string();
 
-            let codebase: String = fragments.iter().map(|f| f.raw_data()).collect();
+            path.call_method1("insert", (0, &cactuskit_path))
+                .expect("sys.path insert");
 
-            let code = CString::new(codebase).expect("msg");
-            let filename = CString::new("mymod.py").expect("msg");
-            let module_name = CString::new("mymod").expect("msg");
+            Self {
+                sys: sys.into(),
+                path: path.into(),
+                cactuskit_path,
+            }
+        })
+    }
 
-            let custom_module = PyModule::from_code(
-                py,
-                code.as_c_str(),
-                filename.as_c_str(),
-                module_name.as_c_str(),
-            )
-            .expect("msg");
+    fn execute(
+        &self,
+        fragments: &[Fragment],
+        function: &Function,
+        _args: &[Argument],
+    ) {
+        Python::with_gil(|py| {
+            let module = self.build_module(py, fragments);
 
-            let handler = match custom_module.getattr(function.name()) {
+            let handler = module
+                .getattr(function.name())
+                .expect("function not found");
+
+            handler.call0().expect("execution failed");
+        })
+    }
+
+    fn is_entrypoint(&self, fragments: &[Fragment], function: &Function) -> bool {
+        Python::with_gil(|py| {
+            let module = self.build_module(py, fragments);
+
+            let handler = match module.getattr(function.name()) {
                 Ok(h) => h,
                 Err(_) => return false,
             };
 
             handler
-                .getattr("_is_declared")
+                .getattr(REGISTERED_PROPERTY_ID)
                 .and_then(|v| v.extract::<bool>())
                 .unwrap_or(false)
         })

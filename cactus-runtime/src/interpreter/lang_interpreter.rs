@@ -4,6 +4,10 @@ use crate::{
 };
 
 pub trait LangInterpreter {
-    fn execute(fragments: &[Fragment], function: &Function, args: &[Argument]);
-    fn is_entrypoint(fragments: &[Fragment], function: &Function) -> bool;
+    fn new() -> Self
+    where
+        Self: Sized;
+
+    fn execute(&self, fragments: &[Fragment], function: &Function, args: &[Argument]);
+    fn is_entrypoint(&self, fragments: &[Fragment], function: &Function) -> bool;
 }

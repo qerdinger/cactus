@@ -46,15 +46,19 @@ fn main() {
         }
     }
 
+    let interpreter = PythonInterpreter::new();
+
     for fnc in all_functions {
-        if PythonInterpreter::is_entrypoint(&fragments, &fnc) {
+        if interpreter.is_entrypoint(&fragments, &fnc) {
             registry.add_registered(fnc);
         } else {
             registry.add_unregistered(fnc);
         }
     }
 
-    info!("{} function(s) discovered", fragments.len());
+    info!("{} function(s) registered / {} function(s) unregistered",
+        registry.get_registered().len(),
+        registry.get_unregistered().len());
 
     /*
     Python::with_gil(|py| {
