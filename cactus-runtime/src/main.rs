@@ -40,25 +40,24 @@ fn main() {
     info!("{} fragment(s) discovered", fragments.len());
     let mut all_functions = Vec::new();
 
-    for fragment in &mut fragments {
-        if let Some(fncs) = fragment.functions_mut() {
+    fragments.iter_mut().for_each(|frgmt| {
+        if let Some(fncs) = frgmt.functions_mut() {
             all_functions.extend(fncs.drain(..));
         }
-    }
+    });
 
     let interpreter = PythonInterpreter::new();
 
     for fnc in all_functions {
-        if interpreter.is_entrypoint(&fragments, &fnc) {
-            registry.add_registered(fnc);
-        } else {
-            registry.add_unregistered(fnc);
+        match interpreter.is_entrypoint(&fragments, &fnc) {
+            true  => registry.add_registered(fnc),
+            false => registry.add_unregistered(fnc),
         }
     }
 
     info!("{} function(s) registered / {} function(s) unregistered",
-        registry.get_registered().len(),
-        registry.get_unregistered().len());
+    registry.get_registered().len(),
+    registry.get_unregistered().len());
 
     /*
     Python::with_gil(|py| {
