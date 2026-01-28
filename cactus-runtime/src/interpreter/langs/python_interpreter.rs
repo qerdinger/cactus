@@ -7,12 +7,14 @@ use pyo3::{Py, Python};
 
 use crate::LangInterpreter;
 
+use crate::discovery::lang::{Lang, Language};
 use crate::{
     fragment::fragment::Fragment,
     function::{argument::Argument, function::Function},
 };
 
 pub struct PythonInterpreter {
+    lang: Lang,
     sys: Py<PyModule>,
     path: Py<PyAny>,
     cactuskit_path: String,
@@ -85,11 +87,16 @@ impl LangInterpreter for PythonInterpreter {
                 .expect("sys.path insert");
 
             Self {
+                lang: Lang::new(Language::Python),
                 sys: sys.into(),
                 path: path.into(),
                 cactuskit_path,
             }
         })
+    }
+
+    fn lang(&self) -> &Lang {
+        &self.lang
     }
 
     fn execute(
