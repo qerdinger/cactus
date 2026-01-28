@@ -6,12 +6,12 @@ use crate::lang::python_reader::PythonReader;
 pub struct LangSelector;
 
 impl LangSelector {
-    fn get_language(raw_data: &str) -> Lang {
+    fn get_lang(raw_data: &str) -> Lang {
         Lang::new(Language::Python)
     }
 
     pub fn get_language_reader(fragment: &Fragment) -> Box<dyn LangReader> {
-        let reader = match Self::get_language(fragment.name()).lang() {
+        let reader = match Self::get_lang(fragment.name()).language() {
             Language::Python => PythonReader,
             _ => panic!("Language not supported!"),
         };

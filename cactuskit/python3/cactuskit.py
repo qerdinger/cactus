@@ -109,7 +109,7 @@ def make_res(payload: PAYLOAD_TYPE,
 # Web Handler Decorator
 # ---------------------------------------------------------------------
 
-def wattr(
+def cactuize(
     protocol: ApiProtocol = ApiProtocol.HTTP,
     method: ApiMethod = ApiMethod.GET,
     auth=None,

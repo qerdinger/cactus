@@ -2,7 +2,7 @@
 
 # cactuskit.core
 # cactuskit.protocol
-from cactuskit import ApiMethod, ApiProtocol, HttpStatus, wattr
+from cactuskit import ApiMethod, ApiProtocol, HttpStatus, cactuize
 
 """
 Basic Entrypoint
@@ -13,11 +13,11 @@ Output: String
 def authenticate():
     return True
 
-@wattr()
+@cactuize()
 def simple_entrypoint():
     return f"Hello World from {simple_entrypoint}"
 
-@wattr(
+@cactuize(
     auth=authenticate,
     protocol=ApiProtocol.HTTP,
     method=ApiMethod.GET)
@@ -26,21 +26,21 @@ def entrypoint(name):
         "content": f"Hello {name}"
     })
 
-@wattr()
+@cactuize()
 def en_lang():
     print("English")
     return (HttpStatus.HTTP_OK, "English")
 
-@wattr()
+@cactuize()
 def fr_lang():
     print("French")
     return "French"
 
-@wattr()
+@cactuize()
 def not_found():
     return (HttpStatus.HTTP_NOT_FOUND, "Not found!")
 
-@wattr()
+@cactuize()
 def access_denied():
     return (HttpStatus(403), "Access denied!")
 
