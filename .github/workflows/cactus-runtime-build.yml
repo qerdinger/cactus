@@ -1,4 +1,4 @@
-name: Build Cactus Runtime
+name: Cactus Runtime | Build & Test
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   MANIFEST_PATH: cactus-runtime/Cargo.toml
 
 jobs:
-  build:
+  cactus_build_and_test:
 
     runs-on: ubuntu-latest
 
