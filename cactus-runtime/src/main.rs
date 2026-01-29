@@ -1,6 +1,5 @@
 use std::env;
 use tracing::{error, info, Level};
-use tracing_subscriber::fmt::init;
 use tracing_subscriber::FmtSubscriber;
 
 mod discovery;
@@ -10,16 +9,13 @@ mod interpreter;
 mod lang;
 mod registry;
 
-use pyo3::prelude::*;
-use pyo3::types::PyModule;
-
 use crate::discovery::discover::Discover;
-use crate::discovery::lang::{Lang, Language};
-use crate::function::function::Function;
 
+use crate::discovery::lang::{Lang, Language};
+use crate::interpreter::interpreter_engine::InterpreterEngine;
 use crate::registry::registry::Registry;
 use interpreter::lang_interpreter::LangInterpreter;
-use interpreter::python_interpreter::PythonInterpreter;
+use interpreter::langs::python_interpreter::PythonInterpreter;
 
 fn tracing_subscriber_handler(max_level: Level) {
     let subscriber = FmtSubscriber::builder().with_max_level(max_level).finish();
@@ -40,61 +36,49 @@ fn main() {
     info!("{} fragment(s) discovered", fragments.len());
     let mut all_functions = Vec::new();
 
-    for fragment in &mut fragments {
-        if let Some(fncs) = fragment.functions_mut() {
+    fragments.iter_mut().for_each(|frgmt| {
+        if let Some(fncs) = frgmt.functions_mut() {
             all_functions.extend(fncs.drain(..));
         }
-    }
+    });
 
-    let interpreter = PythonInterpreter::new();
+    let mut interpreter_engine = InterpreterEngine::new();
+
+    for _ in 0..=4 {
+        interpreter_engine.register(PythonInterpreter::new());
+    }
 
     for fnc in all_functions {
-        if interpreter.is_entrypoint(&fragments, &fnc) {
-            registry.add_registered(fnc);
+        if let (f_name, Some(f_lang)) = (fnc.name(), fnc.lang()) {
+            let Some(is_entrypoint) = interpreter_engine
+                .with_interpreter_for_lang(f_lang, |interp| interp.is_entrypoint(&fragments, &fnc))
+            else {
+                info!(
+                    "{}: No interpreter available for lang (defined as [{:?}])",
+                    f_name, f_lang
+                );
+                continue;
+            };
+
+            match is_entrypoint {
+                true => registry.add_registered(fnc),
+                false => registry.add_unregistered(fnc),
+            }
         } else {
-            registry.add_unregistered(fnc);
+            info!(
+                "{}: Language not defined (defined as [{:?}])",
+                fnc.name(),
+                fnc.lang()
+            )
         }
     }
 
-    info!("{} function(s) registered / {} function(s) unregistered",
+    info!(
+        "{} function(s) registered / {} function(s) unregistered",
         registry.get_registered().len(),
-        registry.get_unregistered().len());
+        registry.get_unregistered().len()
+    );
 
-    /*
-    Python::with_gil(|py| {
-        let module = PyModule::import(py, "../examples/serverless");
-        if module.is_err() {
-            error!("Could not load the module");
-            return;
-        }
-        let module = module.unwrap();
-
-        let functions = vec![
-            "simple_entrypoint",
-            "entrypoint",
-            "en_lang",
-            "fr_lang"
-        ];
-
-        for func_name in functions {
-            let func = module.getattr(func_name);
-
-            if func.is_err() {
-                continue;
-            }
-            let func = func.unwrap();
-
-            // call function (no args)
-            let result = func.call0();
-
-            if result.is_err() {
-                continue;
-            }
-
-            let result = result.unwrap();
-
-            println!("Called {} - {:?}", func_name, result);
-        }
-    });
-     */
+    // inter = interpreter_engine.for(Python).get_interpreter()
+    // inter.release() / interpreter_engine.release(inter) / interpreter_engine.release(inter.get_id())
 }

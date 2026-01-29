@@ -1,14 +1,18 @@
+use crate::discovery::lang::{Lang, Language};
 use crate::fragment::fragment::Fragment;
 use crate::function::argument::Argument;
 use crate::function::function::Function;
 use crate::lang::lang_reader::LangReader;
+use std::sync::Arc;
 
 const FUNCDECL_KEYWORD: &str = "def";
 const FUNCDECL_LENGTH: usize = FUNCDECL_KEYWORD.len();
 const SPACE_LENGTH: usize = 1;
 const ARGUMENT_SEPARATOR: char = ',';
 
-pub struct PythonReader;
+pub struct PythonReader {
+    pub lang: Arc<Lang>,
+}
 
 impl PythonReader {
     fn convert_idx_to_function_name(s: &str, s_len: usize, s_at: usize) -> Option<String> {
@@ -59,6 +63,16 @@ impl PythonReader {
 }
 
 impl LangReader for PythonReader {
+    fn new() -> Self {
+        Self {
+            lang: Arc::new(Lang::new(Language::Python)),
+        }
+    }
+
+    fn lang(&self) -> &Lang {
+        self.lang.as_ref()
+    }
+
     fn extract(&self, fragment: &Fragment) -> Vec<Function> {
         let fnc_indexes: Vec<usize> = fragment
             .raw_data()
@@ -75,7 +89,7 @@ impl LangReader for PythonReader {
                     Self::convert_idx_to_function_name(fragment.raw_data(), content_size, *x),
                     Self::convert_idx_to_arguments(fragment.raw_data(), content_size, *x),
                 ) {
-                    return Function::new(name, None, args);
+                    return Function::new(name, Some(Arc::clone(&self.lang)), args);
                 }
                 panic!("[{}]: Error thrown whilst parsing.", fragment.name());
             })
