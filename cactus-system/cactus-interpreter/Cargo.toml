@@ -1,0 +1,12 @@
+[package]
+name = "cactus-interpreter"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cactus-foundation = { path = "../cactus-foundation" }
+[dependencies.pyo3]
+version = "0.27.2"
+# Enabling this cargo feature will cause PyO3 to start a Python interpreter on first call to `Python::attach`
+features = ["auto-initialize"]
+

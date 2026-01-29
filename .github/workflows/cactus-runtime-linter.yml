@@ -9,7 +9,7 @@ on:
 env:
   RUSTFLAGS: "-Dwarnings"
   CARGO_TERM_COLOR: always
-  MANIFEST_PATH: cactus-runtime/Cargo.toml
+  MANIFEST_PATH: cactus-system/Cargo.toml
 
 jobs:
   cactus_lint:

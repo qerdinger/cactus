@@ -1,0 +1,16 @@
+[package]
+name = "cactus-system"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+cactus-foundation = { path = "./cactus-foundation" }
+cactus-ingest = { path = "./cactus-ingest" }
+cactus-lang = { path = "./cactus-lang" }
+cactus-interpreter = { path = "./cactus-interpreter" }
+
+tracing = "0.1.41"
+tracing-subscriber = "0.3.20"
+strum_macros = "0.27.2"
+log = "0.4.28"
