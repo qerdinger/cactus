@@ -17,10 +17,6 @@ name = "cactus-lang"
 version = "0.1.0"
 dependencies = [
  "cactus-foundation",
- "log",
- "strum_macros",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

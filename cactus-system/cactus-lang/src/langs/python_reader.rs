@@ -34,7 +34,7 @@ impl PythonReader {
         None
     }
 
-    fn convert_idx_to_arguments(s: &str, s_len: usize, s_at: usize) -> Option<Vec<Argument>> {
+    fn convert_idx_to_arguments(s: &str, s_at: usize) -> Option<Vec<Argument>> {
         let mut l_parenthesis: Option<usize> = None;
         let mut r_parenthesis: Option<usize> = None;
 
@@ -87,7 +87,7 @@ impl LangReader for PythonReader {
             .map(|x| {
                 if let (Some(name), Some(args)) = (
                     Self::convert_idx_to_function_name(fragment.raw_data(), content_size, *x),
-                    Self::convert_idx_to_arguments(fragment.raw_data(), content_size, *x),
+                    Self::convert_idx_to_arguments(fragment.raw_data(), *x),
                 ) {
                     return Function::new(name, Some(Arc::clone(&self.lang)), args);
                 }

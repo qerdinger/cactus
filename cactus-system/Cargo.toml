@@ -12,5 +12,3 @@ cactus-interpreter = { path = "./cactus-interpreter" }
 
 tracing = "0.1.41"
 tracing-subscriber = "0.3.20"
-strum_macros = "0.27.2"
-log = "0.4.28"

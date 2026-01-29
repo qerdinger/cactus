@@ -23,10 +23,6 @@ name = "cactus-ingest"
 version = "0.1.0"
 dependencies = [
  "cactus-foundation",
- "log",
- "strum_macros",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -42,10 +38,6 @@ name = "cactus-lang"
 version = "0.1.0"
 dependencies = [
  "cactus-foundation",
- "log",
- "strum_macros",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -56,8 +48,6 @@ dependencies = [
  "cactus-ingest",
  "cactus-interpreter",
  "cactus-lang",
- "log",
- "strum_macros",
  "tracing",
  "tracing-subscriber",
 ]

@@ -6,7 +6,7 @@ use cactus_foundation::lang::{Lang, Language};
 pub struct LangSelector;
 
 impl LangSelector {
-    fn get_lang(raw_data: &str) -> Lang {
+    fn get_lang(_raw_data: &str) -> Lang {
         Lang::new(Language::Python)
     }
 

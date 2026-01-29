@@ -4,7 +4,7 @@ use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
 use std::env;
-use tracing::{error, info, Level};
+use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
 fn tracing_subscriber_handler(max_level: Level) {
@@ -14,7 +14,7 @@ fn tracing_subscriber_handler(max_level: Level) {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let _args: Vec<String> = env::args().collect();
     tracing_subscriber_handler(Level::INFO);
     info!("Cactus Runtime System");
 

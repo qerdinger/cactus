@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[allow(dead_code)]
 pub struct Argument {
     name: String,
     primitive: Option<String>,
