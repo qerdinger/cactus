@@ -12,7 +12,7 @@ impl LangSelector {
 
     pub fn get_language_reader(fragment: &Fragment) -> Box<dyn LangReader> {
         let reader = match Self::get_lang(fragment.name()).language() {
-            Language::Python => PythonReader,
+            Language::Python => PythonReader::new(),
             _ => panic!("Language not supported!"),
         };
 

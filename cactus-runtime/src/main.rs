@@ -44,55 +44,40 @@ fn main() {
 
     let mut interpreter_engine = InterpreterEngine::new();
 
-    let interpreter = PythonInterpreter::new();
-    for _ in 0..=0 {
+    for _ in 0..=4 {
         interpreter_engine.register(PythonInterpreter::new());
     }
 
     for fnc in all_functions {
-        match interpreter.is_entrypoint(&fragments, &fnc) {
-            true => registry.add_registered(fnc),
-            false => registry.add_unregistered(fnc),
+        if let (f_name, Some(f_lang)) = (fnc.name(), fnc.lang()) {
+            let Some(is_entrypoint) = interpreter_engine
+                .with_interpreter_for_lang(f_lang, |interp| interp.is_entrypoint(&fragments, &fnc))
+            else {
+                info!(
+                    "{}: No interpreter available for lang (defined as [{:?}])",
+                    f_name, f_lang
+                );
+                continue;
+            };
+
+            match is_entrypoint {
+                true => registry.add_registered(fnc),
+                false => registry.add_unregistered(fnc),
+            }
+        } else {
+            info!(
+                "{}: Language not defined (defined as [{:?}])",
+                fnc.name(),
+                fnc.lang()
+            )
         }
     }
 
-    info!("{}", interpreter_engine);
-
-    info!("{} function(s) registered / {} function(s) unregistered",
-    registry.get_registered().len(),
-    registry.get_unregistered().len());
-
-    let python = Lang::new(Language::Python);
-
-    if let Some(inter) = interpreter_engine.get_interpreter_for_lang(&python) {
-        info!("a: {}", inter.lang());
-    } else {
-        info!("b: {}", python);
-    }
-
-    if let Some(inter) = interpreter_engine.get_interpreter_for_lang(&python) {
-        info!("a: {}", inter.lang());
-    } else {
-        info!("b: {}", python);
-    }
-
-    if let Some(inter) = interpreter_engine.get_interpreter_for_lang(&python) {
-        info!("a: {}", inter.lang());
-    } else {
-        info!("b: {}", python);
-    }
-
-    if let Some(inter) = interpreter_engine.get_interpreter_for_lang(&python) {
-        info!("a: {}", inter.lang());
-    } else {
-        info!("b: {}", python);
-    }
-
-    if let Some(inter) = interpreter_engine.get_interpreter_for_lang(&python) {
-        info!("a: {}", inter.lang());
-    } else {
-        info!("b: {}", python);
-    }
+    info!(
+        "{} function(s) registered / {} function(s) unregistered",
+        registry.get_registered().len(),
+        registry.get_unregistered().len()
+    );
 
     // inter = interpreter_engine.for(Python).get_interpreter()
     // inter.release() / interpreter_engine.release(inter) / interpreter_engine.release(inter.get_id())

@@ -28,45 +28,46 @@ impl InterpreterEngine {
     {
         let idx = self.idx;
 
-        self.interpreters.insert(idx, InterpreterEntry {
-            interpreter: Arc::new(interpreter),
-            available: true,
-        });
+        self.interpreters.insert(
+            idx,
+            InterpreterEntry {
+                interpreter: Arc::new(interpreter),
+                available: true,
+            },
+        );
 
         self.idx += 1;
     }
 
-    pub fn get_interpreter_for_lang(&mut self, lang: &Lang) -> Option<&(dyn LangInterpreter + Send + Sync)> {
-        let idx = self.interpreters.iter()
-            .find(|(_, entry)| {
-                entry.available && entry.interpreter.lang() == lang
-            })
+    pub fn with_interpreter_for_lang<R, F>(&mut self, lang: &Lang, f: F) -> Option<R>
+    where
+        F: FnOnce(&dyn LangInterpreter) -> R,
+    {
+        let idx = self
+            .interpreters
+            .iter()
+            .find(|(_, entry)| entry.available && entry.interpreter.lang() == lang)
             .map(|(idx, _)| *idx)?;
 
-        {
-            let entry = self.interpreters.get_mut(&idx)?;
-            entry.available = false;
-        }
+        self.interpreters.get_mut(&idx)?.available = false;
 
-        self.interpreters
-            .get(&idx)
-            .map(|entry| entry.interpreter.as_ref())
-    }
+        let result = {
+            let entry = self.interpreters.get(&idx)?;
+            f(entry.interpreter.as_ref())
+        };
 
-    pub fn release_interpreter(&mut self, idx: usize) {
-        if let Some(entry) = self.interpreters.get_mut(&idx) {
-            entry.available = true;
-        }
+        self.interpreters.get_mut(&idx)?.available = true;
+
+        Some(result)
     }
 }
 
 impl fmt::Display for InterpreterEngine {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let outs = self.interpreters
+        let outs = self
+            .interpreters
             .iter()
-            .map(|(idx, entry)|
-                { format!("{}: [{}]", idx, entry.interpreter.lang()) }
-            )
+            .map(|(idx, entry)| format!("{}: [{}]", idx, entry.interpreter.lang()))
             .collect::<Vec<String>>()
             .join("\n");
 

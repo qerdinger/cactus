@@ -38,17 +38,15 @@ impl PythonInterpreter {
         <Self as LangInterpreter>::new()
     }
 
-    fn build_module<'py>(
-        &self,
-        py: Python<'py>,
-        fragments: &[Fragment],
-    ) -> Bound<'py, PyModule> {
+    fn build_module<'py>(&self, py: Python<'py>, fragments: &[Fragment]) -> Bound<'py, PyModule> {
         let codebase: String = fragments.iter().map(|f| f.raw_data()).collect();
 
         let code = CString::new(codebase).expect("invalid python code");
-        let filename = CString::new(
-            format!("{}{}", PYTHON_MOD_FILENAME, PYTHON_FILENAME_EXTENSION)
-        ).unwrap();
+        let filename = CString::new(format!(
+            "{}{}",
+            PYTHON_MOD_FILENAME, PYTHON_FILENAME_EXTENSION
+        ))
+        .unwrap();
         let module_name = CString::new(PYTHON_MOD_FILENAME).unwrap();
 
         PyModule::from_code(
@@ -57,7 +55,7 @@ impl PythonInterpreter {
             filename.as_c_str(),
             module_name.as_c_str(),
         )
-            .expect("failed to create python module")
+        .expect("failed to create python module")
     }
 }
 
@@ -78,10 +76,7 @@ impl LangInterpreter for PythonInterpreter {
                 .canonicalize()
                 .expect("cactuskit path");
 
-            let cactuskit_path = cactuskit_dir
-                .to_str()
-                .expect("utf-8 path")
-                .to_string();
+            let cactuskit_path = cactuskit_dir.to_str().expect("utf-8 path").to_string();
 
             path.call_method1("insert", (0, &cactuskit_path))
                 .expect("sys.path insert");
@@ -99,18 +94,11 @@ impl LangInterpreter for PythonInterpreter {
         &self.lang
     }
 
-    fn execute(
-        &self,
-        fragments: &[Fragment],
-        function: &Function,
-        _args: &[Argument],
-    ) {
+    fn execute(&self, fragments: &[Fragment], function: &Function, _args: &[Argument]) {
         Python::with_gil(|py| {
             let module = self.build_module(py, fragments);
 
-            let handler = module
-                .getattr(function.name())
-                .expect("function not found");
+            let handler = module.getattr(function.name()).expect("function not found");
 
             handler.call0().expect("execution failed");
         })

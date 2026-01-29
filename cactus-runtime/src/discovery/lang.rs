@@ -21,7 +21,10 @@ pub struct Lang {
 
 impl Lang {
     pub fn new(lang: Language) -> Lang {
-        Self { lang, version: None }
+        Self {
+            lang,
+            version: None,
+        }
     }
 
     pub fn language(&self) -> &Language {
@@ -38,4 +41,3 @@ impl fmt::Display for Lang {
         write!(f, "name={}, version={:?}", self.lang, self.version())
     }
 }
-
