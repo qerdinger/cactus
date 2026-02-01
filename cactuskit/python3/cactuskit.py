@@ -3,6 +3,8 @@ The Cactus Library
 
 Licensed under MIT - qerdinger @ 2025
 Hosted on GitHub : https://github.com/qerdinger/cactus
+
+As a matter of fact, the "cactuize" decorator name comes from an inspiration of @khalidbelk (https://github.com/khalidbelk)
 """
 
 from enum import Enum, IntEnum
