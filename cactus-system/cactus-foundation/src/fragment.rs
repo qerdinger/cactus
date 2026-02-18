@@ -1,5 +1,6 @@
 use crate::function::Function;
 
+#[derive(Clone)]
 pub struct Fragment {
     name: String,
     raw_data: String,

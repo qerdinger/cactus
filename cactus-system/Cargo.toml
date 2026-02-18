@@ -12,3 +12,6 @@ cactus-interpreter = { path = "./cactus-interpreter" }
 
 tracing = "0.1.41"
 tracing-subscriber = "0.3.20"
+log = "0.4.28"
+serde_json = "1.0"
+tokio = { version = "1", features = ["rt", "macros"] }
