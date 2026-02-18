@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "cargo build cactus-system",
+			"type": "shell",
+			"command": "cargo",
+			"args": [
+				"build",
+				"--package",
+				"cactus-system"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build"
+		}
+	]
+}

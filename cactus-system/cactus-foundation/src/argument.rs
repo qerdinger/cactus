@@ -1,4 +1,5 @@
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct Argument {
     name: String,
     primitive: Option<String>,
