@@ -4,6 +4,8 @@ use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
 use serde_json::Value as JsonValue;
 use std::env;
+use std::time::Instant;
+use log::error;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
@@ -62,7 +64,7 @@ fn main() {
             };
 
             match is_entrypoint {
-                true => registry.register_registered(fragments.clone(), fnc),
+                true => registry.register_parallel(fragments.clone(), fnc),
                 _ => registry.register_unregistered(fnc),
             }
         } else {
@@ -80,12 +82,20 @@ fn main() {
         registry.get_unregistered().len()
     );
 
-    if let Some(pool) = registry.get_worker_pool("simple_entrypoint") {
+    if let Some(pool) = registry.get_parallel_worker("simple_entrypoint_delayed") {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .expect("tokio runtime");
-        let resp = runtime.block_on(pool.invoke(JsonValue::Null));
-        info!("Invocation response for simple_entrypoint: {:?}", resp);
-    } else {}
+
+        let (resp_fast, resp_delayed) = runtime.block_on(async {
+            tokio::join!(
+            pool.invoke(JsonValue::Null),
+            pool.invoke(JsonValue::Null),
+        )});
+
+        info!("resp_fast: {}", resp_fast);
+        info!("resp_delayed: {}", resp_delayed);
+
+    }
 }

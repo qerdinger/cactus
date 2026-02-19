@@ -11,6 +11,7 @@ from enum import Enum, IntEnum
 from functools import wraps
 import time as tm
 import sys
+import json
 from typing import Union, Dict
 
 # ---------------------------------------------------------------------
@@ -90,6 +91,13 @@ class CactusResponse:
 
     def get_timestamp(self) -> float:
         return self._timestamp
+    
+class CactusEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, CactusResponse):
+            return o.__dict__
+        return super().default(o)
+
 
 # ---------------------------------------------------------------------
 # Helpers

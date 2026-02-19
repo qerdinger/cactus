@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 cactus-foundation = { path = "../cactus-foundation" }
 serde_json = "1.0.149"
+tracing = "0.1.41"
 [dependencies.tokio]
 version = "1.49.0"
 features = ["full"]
