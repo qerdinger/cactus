@@ -3,7 +3,7 @@ use cactus_foundation::fragment::Fragment;
 use pyo3::Python;
 use std::sync::{Arc, Mutex};
 use tokio::sync::{mpsc, oneshot};
-use tracing::info;
+use tracing::{error, info};
 
 struct Job {
     args: serde_json::Value,
@@ -54,6 +54,10 @@ impl WorkerPool {
     pub async fn invoke(&self, args: serde_json::Value) -> serde_json::Value {
         let (tx, rx) = oneshot::channel();
         self.tx.send(Job { args, resp: tx }).await.unwrap();
-        rx.await.unwrap()
+
+        rx.await.unwrap_or_else(|e| {
+            error!("Worker failed to receive result: {}", e);
+            serde_json::Value::Null
+        })
     }
 }

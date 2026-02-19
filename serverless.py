@@ -23,14 +23,18 @@ DB = {}
 
 @cactuize()
 def simple_entrypoint_delayed():
-    time.sleep(1)
-    import os
+    import os,threading,random
     global GLOBAL_I,DB
+    TIMEOUT = random.randrange(5)
+    SEED = random.random()
+    time.sleep(TIMEOUT)
+    
+    
+    for x in range(100):
+        DB["{}{}".format(GLOBAL_I, x)] = GLOBAL_I
     
     GLOBAL_I += 1
-    DB[GLOBAL_I] = time.time()
-    
-    return f"""Hello World\nTime:{time.time()}\nGlobalI : {GLOBAL_I}\n{DB}\nfrom pid : {os.getpid()}"""
+    return f"""Hello World\nTime:{time.time()}\nTIMEOUT:{TIMEOUT}\nSEED:{SEED}\nGlobalI : {GLOBAL_I}\nfrom pid : {os.getpid()}--{threading.get_ident()}"""
 
 @cactuize(
     auth=authenticate,
