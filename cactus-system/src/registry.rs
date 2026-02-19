@@ -1,7 +1,7 @@
 use cactus_foundation::fragment::Fragment;
 use cactus_foundation::function::Function;
-use cactus_interpreter::worker_pool::WorkerPool;
 use cactus_interpreter::parallel_worker::ParallelWorker;
+use cactus_interpreter::worker_pool::WorkerPool;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::info;

@@ -34,7 +34,7 @@ def simple_entrypoint_delayed():
         DB["{}{}".format(GLOBAL_I, x)] = GLOBAL_I
     
     GLOBAL_I += 1
-    return f"""Hello World\nTime:{time.time()}\nTIMEOUT:{TIMEOUT}\nSEED:{SEED}\nGlobalI : {GLOBAL_I}\nfrom pid : {os.getpid()}--{threading.get_ident()}"""
+    return f"""Hello World\nTime:{time.time()}\nTIMEOUT:{TIMEOUT}\nSEED:{SEED}\nGlobalI : {GLOBAL_I}.{len(DB)}\nfrom pid : {os.getpid()}--{threading.get_ident()}"""
 
 @cactuize(
     auth=authenticate,

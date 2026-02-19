@@ -1,11 +1,11 @@
 use cactus_foundation::fragment::Fragment;
+use serde_json::json;
 use serde_json::Value as JsonValue;
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, Mutex};
 use tracing::{error, info};
-use serde_json::json;
 
 struct WorkerProcess {
     stdin: Option<std::process::ChildStdin>,
@@ -89,7 +89,7 @@ while True:
                     .arg(worker_code)
                     .stdin(Stdio::piped())
                     .stdout(Stdio::piped())
-                    .stderr(Stdio::inherit())
+                    .stderr(Stdio::piped())
                     .spawn()
                     .expect("failed to spawn worker process");
 
