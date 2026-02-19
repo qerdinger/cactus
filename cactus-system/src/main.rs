@@ -64,7 +64,7 @@ fn main() {
             };
 
             match is_entrypoint {
-                true => registry.register_registered(fragments.clone(), fnc),
+                true => registry.register_parallel(fragments.clone(), fnc),
                 _ => registry.register_unregistered(fnc),
             }
         } else {
@@ -82,38 +82,20 @@ fn main() {
         registry.get_unregistered().len()
     );
 
-    if let (Some(pf), Some(pdelayed)) = (
-        registry.get_worker_pool("simple_entrypoint"),
-        registry.get_worker_pool("simple_entrypoint_delayed"),
-    ) {
+    if let Some(pool) = registry.get_parallel_worker("simple_entrypoint_delayed") {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .expect("tokio runtime");
 
-        let started = Instant::now();
-        runtime.block_on(async {
+        let (resp_fast, resp_delayed) = runtime.block_on(async {
             tokio::join!(
-                pf.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-                pdelayed.invoke(JsonValue::Null),
-            )
-        });
-        let elapsed = started.elapsed();
-        info!("Concurrent invocation elapsed: {:?}", elapsed);
-    } else {
-        error!("An error occurred")
+            pool.invoke(JsonValue::Null),
+            pool.invoke(JsonValue::Null),
+        )});
+
+        info!("resp_fast: {}", resp_fast);
+        info!("resp_delayed: {}", resp_delayed);
+
     }
 }

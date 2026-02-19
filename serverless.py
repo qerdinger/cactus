@@ -25,7 +25,7 @@ DB = {}
 def simple_entrypoint_delayed():
     import os,threading,random
     global GLOBAL_I,DB
-    TIMEOUT = random.randrange(5)
+    TIMEOUT = random.randrange(2)
     SEED = random.random()
     time.sleep(TIMEOUT)
     
