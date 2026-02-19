@@ -3,6 +3,7 @@
 # cactuskit.core
 # cactuskit.protocol
 from cactuskit import ApiMethod, ApiProtocol, HttpStatus, cactuize
+import time
 
 """
 Basic Entrypoint
@@ -16,6 +17,20 @@ def authenticate():
 @cactuize()
 def simple_entrypoint():
     return f"Hello World from {simple_entrypoint}"
+
+GLOBAL_I = 0
+DB = {}
+
+@cactuize()
+def simple_entrypoint_delayed():
+    time.sleep(1)
+    import os
+    global GLOBAL_I,DB
+    
+    GLOBAL_I += 1
+    DB[GLOBAL_I] = time.time()
+    
+    return f"""Hello World\nTime:{time.time()}\nGlobalI : {GLOBAL_I}\n{DB}\nfrom pid : {os.getpid()}"""
 
 @cactuize(
     auth=authenticate,

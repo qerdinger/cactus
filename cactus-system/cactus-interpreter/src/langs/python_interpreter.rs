@@ -103,15 +103,12 @@ impl LangInterpreter for PythonInterpreter {
 
     fn is_entrypoint(&self, fragments: &[Fragment], function: &Function) -> bool {
         Python::with_gil(|py| {
-            println!("building...");
             let module = self.build_module(py, fragments);
-            println!("getting handler...");
             let handler = match module.getattr(function.name()) {
                 Ok(h) => h,
                 Err(_) => return false,
             };
 
-            println!("extracting data...");
             handler
                 .getattr(REGISTERED_PROPERTY_ID)
                 .and_then(|v| v.extract::<bool>())
