@@ -1,11 +1,12 @@
 use cactus_foundation::fragment::Fragment;
+use serde_json::json;
 use serde_json::Value as JsonValue;
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, Mutex};
 use tracing::{error, info};
-use serde_json::json;
+use crate::cactus_resp::CactusResponse;
 
 struct WorkerProcess {
     stdin: Option<std::process::ChildStdin>,
@@ -15,7 +16,7 @@ struct WorkerProcess {
 
 struct Job {
     args: JsonValue,
-    resp: oneshot::Sender<JsonValue>,
+    resp: oneshot::Sender<CactusResponse>,
 }
 
 pub struct ParallelWorker {
@@ -89,7 +90,7 @@ while True:
                     .arg(worker_code)
                     .stdin(Stdio::piped())
                     .stdout(Stdio::piped())
-                    .stderr(Stdio::inherit())
+                    .stderr(Stdio::piped())
                     .spawn()
                     .expect("failed to spawn worker process");
 
@@ -119,7 +120,7 @@ while True:
                         break;
                     }
 
-                    let response: JsonValue =
+                    let response: CactusResponse =
                         serde_json::from_str(&line_buffer).unwrap_or_else(|e| {
                             error!("{:?}", e);
                             JsonValue::Object(serde_json::json!({
@@ -127,7 +128,7 @@ while True:
                                 "payload": "Failed to parse response",
                                 "timestamp": 0.0
                             }).as_object().unwrap().clone())
-                        });
+                        }).into();
 
                     let _ = job.resp.send(response);
                 }
@@ -137,7 +138,7 @@ while True:
         Self { tx }
     }
 
-    pub async fn invoke(&self, args: JsonValue) -> JsonValue {
+    pub async fn invoke(&self, args: JsonValue) -> CactusResponse {
         let (tx, rx) = oneshot::channel();
         self.tx.send(Job { args, resp: tx }).await.unwrap();
         rx.await.unwrap()

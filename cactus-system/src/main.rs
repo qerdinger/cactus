@@ -2,10 +2,10 @@ use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
+use log::error;
 use serde_json::Value as JsonValue;
 use std::env;
 use std::time::Instant;
-use log::error;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
@@ -46,10 +46,8 @@ fn main() {
 
     for fnc in all_functions {
         if let (f_name, Some(f_lang)) = (fnc.name(), fnc.lang()) {
-            info!("Registering function: {}", f_name);
             let Some(is_entrypoint) = interpreter_engine
                 .with_interpreter_for_lang(f_lang, |interp| {
-                    info!("Executing function: {} {}", fnc.name(), fragments.len());
                     let is_entrypoint = interp.is_entrypoint(&fragments, &fnc);
                     info!("{} is_entrypoint={}", fnc.name(), is_entrypoint);
 
@@ -88,14 +86,28 @@ fn main() {
             .build()
             .expect("tokio runtime");
 
-        let (resp_fast, resp_delayed) = runtime.block_on(async {
+        let (rd, rd1, rd2, rd3, rd4) = runtime.block_on(async {
             tokio::join!(
             pool.invoke(JsonValue::Null),
             pool.invoke(JsonValue::Null),
-        )});
+            pool.invoke(JsonValue::Null),
+            pool.invoke(JsonValue::Null),
+            pool.invoke(JsonValue::Null),
+        )
+        });
 
-        info!("resp_fast: {}", resp_fast);
-        info!("resp_delayed: {}", resp_delayed);
+        info!("rd: {:?}", rd);
+        info!("rd: {:?}", rd1);
+        info!("rd: {:?}", rd2);
+        info!("rd: {:?}", rd3);
+        info!("rd: {:?}", rd4);
 
+        runtime.block_on(async {
+            for _ in 0..2 {
+                let rslt = pool.invoke(JsonValue::Null);
+
+                info!("rslt: {:?}", rslt.await);
+            }
+        });
     }
 }

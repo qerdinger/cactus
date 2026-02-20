@@ -4,10 +4,11 @@ use pyo3::Python;
 use std::sync::{Arc, Mutex};
 use tokio::sync::{mpsc, oneshot};
 use tracing::{error, info};
+use crate::cactus_resp::CactusResponse;
 
 struct Job {
     args: serde_json::Value,
-    resp: oneshot::Sender<serde_json::Value>,
+    resp: oneshot::Sender<CactusResponse>,
 }
 
 pub struct WorkerPool {
@@ -51,13 +52,13 @@ impl WorkerPool {
         Self { tx }
     }
 
-    pub async fn invoke(&self, args: serde_json::Value) -> serde_json::Value {
+    pub async fn invoke(&self, args: serde_json::Value) -> CactusResponse {
         let (tx, rx) = oneshot::channel();
         self.tx.send(Job { args, resp: tx }).await.unwrap();
 
         rx.await.unwrap_or_else(|e| {
             error!("Worker failed to receive result: {}", e);
-            serde_json::Value::Null
+            CactusResponse::error(e.to_string())
         })
     }
 }
