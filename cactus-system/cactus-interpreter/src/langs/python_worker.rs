@@ -11,6 +11,7 @@ use pyo3::types::{
     PyTupleMethods,
 };
 use pyo3::{Bound, Py, Python};
+use crate::cactus_resp::CactusResponse;
 
 pub struct PythonWorker {
     handler: Py<PyAny>,
@@ -34,7 +35,7 @@ impl PythonWorker {
         &self,
         py: Python,
         args: serde_json::Value,
-    ) -> serde_json::Value {
+    ) -> CactusResponse {
         let json = PyModule::import(py, "json").expect("failed to import json");
         let args_json = serde_json::to_string(&args).expect("failed to serialize args");
         let py_args = json
@@ -57,11 +58,7 @@ impl PythonWorker {
         let payload = serde_json::from_str::<serde_json::Value>(&payload_json)
             .expect("failed to parse payload");
 
-        serde_json::json!({
-        "status": status,
-        "payload": payload,
-        "timestamp": timestamp
-    })
+        CactusResponse::ok(status, timestamp, payload)
     }
 }
 

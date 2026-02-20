@@ -96,17 +96,17 @@ fn main() {
         )
         });
 
-        info!("rd: {}", rd);
-        info!("rd1: {}", rd1);
-        info!("rd2: {}", rd2);
-        info!("rd3: {}", rd3);
-        info!("rd3: {}", rd4);
+        info!("rd: {:?}", rd);
+        info!("rd: {:?}", rd1);
+        info!("rd: {:?}", rd2);
+        info!("rd: {:?}", rd3);
+        info!("rd: {:?}", rd4);
 
         runtime.block_on(async {
-            for _ in 0..100 {
+            for _ in 0..2 {
                 let rslt = pool.invoke(JsonValue::Null);
 
-                info!("rslt: {}", rslt.await);
+                info!("rslt: {:?}", rslt.await);
             }
         });
     }
