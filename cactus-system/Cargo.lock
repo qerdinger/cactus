@@ -21,6 +21,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 
 [[package]]
+name = "cactus-com"
+version = "0.1.0"
+dependencies = [
+ "tokio",
+]
+
+[[package]]
 name = "cactus-foundation"
 version = "0.1.0"
 dependencies = [
@@ -59,6 +66,7 @@ dependencies = [
 name = "cactus-system"
 version = "0.1.0"
 dependencies = [
+ "cactus-com",
  "cactus-foundation",
  "cactus-ingest",
  "cactus-interpreter",

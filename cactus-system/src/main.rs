@@ -2,6 +2,7 @@ use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
+use cactus_com::magic_protocol::MagicProtocol;
 use log::error;
 use serde_json::Value as JsonValue;
 use std::env;
@@ -116,6 +117,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:8080").await?;
 
+    //
+
     loop {
         let (mut socket, _) = listener.accept().await?;
 
@@ -136,12 +139,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("{}b received", n);
                 println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
 
-                // Write the data back
-                if let Err(e) = socket.write_all(format!("HTTP/1.1 200 OK
+
+                let data = format!("HTTP/1.1 200 OK
 Content-length: {}
 Content-type: text/plain; charset=UTF-8
 
-{}", 12, concat!("Hello There!")).as_bytes()).await {
+{}", 12, concat!("Hello There!"));
+
+                let protocol = MagicProtocol::new(&buf);
+
+                if let Err(e) = socket.write_all(data.as_bytes()).await {
                     eprintln!("failed to write to socket; err = {:?}", e);
                     return;
                 }

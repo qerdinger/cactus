@@ -9,6 +9,7 @@ cactus-foundation = { path = "./cactus-foundation" }
 cactus-ingest = { path = "./cactus-ingest" }
 cactus-lang = { path = "./cactus-lang" }
 cactus-interpreter = { path = "./cactus-interpreter" }
+cactus-com = { path = "./cactus-com" }
 
 tracing = "0.1.41"
 tracing-subscriber = "0.3.20"
