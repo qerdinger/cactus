@@ -1,5 +1,6 @@
-use cactus_foundation::std::version::Version;
-use regex::Regex;
+use crate::protocols::http::HTTPProtocol;
+use crate::protocols::https::HTTPSProtocol;
+use crate::protocols::ws::WSProtocol;
 
 #[derive(Debug)]
 pub enum Protocol {
@@ -7,80 +8,6 @@ pub enum Protocol {
     Https(HTTPSProtocol),
     WebSocket(WSProtocol),
     None,
-}
-
-#[derive(Debug)]
-pub struct HTTPProtocol {
-    version: Option<Version>,
-}
-
-impl HTTPProtocol {
-    pub fn version(&self) -> Option<&Version> {
-        if let Some(version) = &self.version {
-            Some(version)
-        } else { None }
-    }
-}
-
-#[derive(Debug)]
-pub struct HTTPSProtocol {
-    version: Option<Version>,
-}
-
-#[derive(Debug)]
-pub struct WSProtocol;
-
-
-impl TryFrom<&str> for HTTPProtocol {
-    type Error = anyhow::Error;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if value.contains("HTTP/") {
-            // RFC 2145
-            let re = Regex::new(r"HTTP/(\d+)\.(\d+)")?;
-            let version = re.captures(value).and_then(|caps| {
-                let major = caps.get(1)?.as_str().parse::<u8>().ok()?;
-                let minor = caps.get(2)?.as_str().parse::<u8>().ok()?;
-                Some(Version::new(major, minor))
-            });
-
-            Ok(HTTPProtocol { version })
-        } else {
-            anyhow::bail!("not http")
-        }
-    }
-}
-
-impl TryFrom<&str> for HTTPSProtocol {
-    type Error = anyhow::Error;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if value.contains("HTTPS/") {
-            // RFC 2145
-            let re = Regex::new(r"HTTPS/(\d+)\.(\d+)")?;
-            let version = re.captures(value).and_then(|caps| {
-                let major = caps.get(1)?.as_str().parse::<u8>().ok()?;
-                let minor = caps.get(2)?.as_str().parse::<u8>().ok()?;
-                Some(Version::new(major, minor))
-            });
-
-            Ok(HTTPSProtocol { version })
-        } else {
-            anyhow::bail!("not http")
-        }
-    }
-}
-
-impl TryFrom<&str> for WSProtocol {
-    type Error = anyhow::Error;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if value.starts_with("http://") {
-            Ok(WSProtocol {})
-        } else {
-            anyhow::bail!("not http")
-        }
-    }
 }
 
 impl TryFrom<&str> for Protocol {
