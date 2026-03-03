@@ -1,1 +1,2 @@
-pub mod magic_protocol;
+pub mod magic_request;
+mod protocol;

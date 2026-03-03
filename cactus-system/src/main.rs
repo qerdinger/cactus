@@ -2,7 +2,7 @@ use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
-use cactus_com::magic_protocol::MagicProtocol;
+use cactus_com::magic_request::MagicRequest;
 use log::error;
 use serde_json::Value as JsonValue;
 use std::env;
@@ -146,7 +146,8 @@ Content-type: text/plain; charset=UTF-8
 
 {}", 12, concat!("Hello There!"));
 
-                let protocol = MagicProtocol::new(&buf);
+                let protocol = MagicRequest::new(&buf);
+                println!("protocol= {:?}", protocol);
 
                 if let Err(e) = socket.write_all(data.as_bytes()).await {
                     eprintln!("failed to write to socket; err = {:?}", e);
