@@ -2,12 +2,15 @@ use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
+use cactus_com::magic_request::MagicRequest;
 use log::error;
 use serde_json::Value as JsonValue;
 use std::env;
 use std::time::Instant;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
+use tokio::net::TcpListener;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 mod registry;
 use crate::registry::Registry;
@@ -18,7 +21,8 @@ fn tracing_subscriber_handler(max_level: Level) {
     tracing::subscriber::set_global_default(subscriber).unwrap();
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _args: Vec<String> = env::args().collect();
     tracing_subscriber_handler(Level::INFO);
     info!("Cactus Runtime System");
@@ -80,11 +84,11 @@ fn main() {
         registry.get_unregistered().len()
     );
 
-    if let Some(pool) = registry.get_parallel_worker("simple_entrypoint_delayed") {
+    /*if let Some(pool) = registry.get_parallel_worker("simple_entrypoint_delayed") {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
-            .expect("tokio runtime");
+            .expect("error thrown whilst creating tokio runtime");
 
         let (rd, rd1, rd2, rd3, rd4) = runtime.block_on(async {
             tokio::join!(
@@ -103,10 +107,53 @@ fn main() {
         info!("rd: {:?}", rd4);
 
         runtime.block_on(async {
-            for _ in 0..2 {
+            for _ in 0..3 {
                 let rslt = pool.invoke(JsonValue::Null);
 
                 info!("rslt: {:?}", rslt.await);
+            }
+        });
+    }*/
+
+    let listener = TcpListener::bind("127.0.0.1:8080").await?;
+
+    //
+
+    loop {
+        let (mut socket, _) = listener.accept().await?;
+
+        tokio::spawn(async move {
+            let mut buf = [0; 1024];
+
+            loop {
+                let n = match socket.read(&mut buf).await {
+                    // socket closed
+                    Ok(0) => return,
+                    Ok(n) => n,
+                    Err(e) => {
+                        eprintln!("failed to read from socket; err = {:?}", e);
+                        return;
+                    }
+                };
+
+                println!("{}b received", n);
+                println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
+
+
+                let data = format!("HTTP/1.1 200 OK
+Content-length: {}
+Content-type: text/plain; charset=UTF-8
+
+{}", 12, concat!("Hello There!"));
+
+                let request = MagicRequest::new(&buf);
+                println!("request= {:?}", request);
+                println!("request.protocol= {:?}", request.unwrap().protocol());
+
+                if let Err(e) = socket.write_all(data.as_bytes()).await {
+                    eprintln!("failed to write to socket; err = {:?}", e);
+                    return;
+                }
             }
         });
     }
