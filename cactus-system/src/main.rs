@@ -1,16 +1,16 @@
+use cactus_com::magic_request::MagicRequest;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
-use cactus_com::magic_request::MagicRequest;
 use log::error;
 use serde_json::Value as JsonValue;
 use std::env;
 use std::time::Instant;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpListener;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
-use tokio::net::TcpListener;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 mod registry;
 use crate::registry::Registry;

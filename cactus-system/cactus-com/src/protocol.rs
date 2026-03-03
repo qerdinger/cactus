@@ -1,13 +1,12 @@
-use std::fmt::Display;
-use regex::Regex;
 use cactus_foundation::std::version::Version;
+use regex::Regex;
 
 #[derive(Debug)]
 pub enum Protocol {
     Http(HTTPProtocol),
     Https(HTTPSProtocol),
     WebSocket(WSProtocol),
-    None
+    None,
 }
 
 #[derive(Debug)]

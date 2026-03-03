@@ -1,3 +1,4 @@
+use crate::cactus_resp::CactusResponse;
 use crate::python_helper::build_module;
 use cactus_foundation::fragment::Fragment;
 use pyo3::types::PyAnyMethods;
@@ -11,7 +12,6 @@ use pyo3::types::{
     PyTupleMethods,
 };
 use pyo3::{Bound, Py, Python};
-use crate::cactus_resp::CactusResponse;
 
 pub struct PythonWorker {
     handler: Py<PyAny>,
