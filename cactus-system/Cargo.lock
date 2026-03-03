@@ -40,6 +40,7 @@ name = "cactus-com"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "cactus-foundation",
  "regex",
  "tokio",
 ]

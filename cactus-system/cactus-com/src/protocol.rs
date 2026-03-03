@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use regex::Regex;
+use cactus_foundation::std::version::Version;
 
 #[derive(Debug)]
 pub enum Protocol {
@@ -7,24 +8,6 @@ pub enum Protocol {
     Https(HTTPSProtocol),
     WebSocket(WSProtocol),
     None
-}
-
-#[derive(Debug)]
-pub struct Version {
-    major: u8,
-    minor: u8,
-}
-
-impl Version {
-    fn new(major: u8, minor: u8) -> Self {
-        Self { major, minor }
-    }
-}
-
-impl Display for Version {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}", self.major, self.minor)
-    }
 }
 
 #[derive(Debug)]
