@@ -146,8 +146,9 @@ Content-type: text/plain; charset=UTF-8
 
 {}", 12, concat!("Hello There!"));
 
-                let protocol = MagicRequest::new(&buf);
-                println!("protocol= {:?}", protocol);
+                let request = MagicRequest::new(&buf);
+                println!("request= {:?}", request);
+                println!("request.protocol= {:?}", request.unwrap().protocol());
 
                 if let Err(e) = socket.write_all(data.as_bytes()).await {
                     eprintln!("failed to write to socket; err = {:?}", e);

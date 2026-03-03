@@ -12,4 +12,8 @@ impl MagicRequest {
         let protocol = Protocol::try_from(text).ok()?;
         Some(Self { protocol })
     }
+    
+    pub fn protocol(&self) -> &Protocol {
+        &self.protocol
+    }
 }
