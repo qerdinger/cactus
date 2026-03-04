@@ -1,17 +1,57 @@
+use crate::protocols::http_method::HttpMethod;
 use cactus_foundation::std::version::Version;
-use regex::Regex;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct HTTPProtocol {
+    method: HttpMethod,
     version: Option<Version>,
+    size: usize,
 }
 
 impl HTTPProtocol {
+    pub fn new(method: HttpMethod, version: Option<Version>) -> Self {
+        Self { method, version, size: 0 }
+    }
+
+    pub fn method(&self) -> &HttpMethod {
+        &self.method
+    }
+
     pub fn version(&self) -> Option<&Version> {
         if let Some(version) = &self.version {
             Some(version)
         } else { None }
     }
+}
+
+fn parse_request_line(value: &str) -> Option<(HttpMethod, &str, &str, Version)> {
+    let mut parts = value.split_whitespace();
+
+    let method = parts.next()?;
+    let path = parts.next()?;
+    let version_part = parts.next()?;
+
+    // "HTTP/1.1" or "HTTP/2"
+    let (protocol_str, version_str) = version_part.split_once('/')?;
+
+    let (major, minor) = match version_str.split_once('.') {
+        Some((maj, min)) => (
+            maj.parse::<u8>().ok()?,
+            min.parse::<u8>().ok()?,
+        ),
+        None => (
+            version_str.parse::<u8>().ok()?,
+            0,
+        ),
+    };
+
+    let method = match HttpMethod::from_str(method) {
+        Ok(method) => method,
+        Err(_) => return None,
+    };
+
+    Some((method, path, protocol_str, Version::new(major, minor)))
 }
 
 impl TryFrom<&str> for HTTPProtocol {
@@ -20,14 +60,11 @@ impl TryFrom<&str> for HTTPProtocol {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value.contains("HTTP/") {
             // RFC 2145
-            let re = Regex::new(r"HTTP/(\d+)\.(\d+)")?;
-            let version = re.captures(value).and_then(|caps| {
-                let major = caps.get(1)?.as_str().parse::<u8>().ok()?;
-                let minor = caps.get(2)?.as_str().parse::<u8>().ok()?;
-                Some(Version::new(major, minor))
-            });
+            if let Some((method, path, protocol, version)) = parse_request_line(value) {
+                return Ok(HTTPProtocol::new(method, Some(version)));
+            }
 
-            Ok(HTTPProtocol { version })
+            anyhow::bail!("HTTP request line fails parsing")
         } else {
             anyhow::bail!("not http")
         }
