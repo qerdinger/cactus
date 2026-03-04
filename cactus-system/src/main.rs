@@ -146,7 +146,7 @@ Content-type: text/plain; charset=UTF-8
 
 {}", 12, concat!("Hello There!"));
 
-                let request = MagicRequest::new(&buf);
+                let request = MagicRequest::new(&buf, n);
                 println!("request= {:?}", request);
                 println!("request.protocol= {:?}", request.unwrap().protocol());
 

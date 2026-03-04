@@ -6,12 +6,11 @@ use std::str::FromStr;
 pub struct HTTPProtocol {
     method: HttpMethod,
     version: Option<Version>,
-    size: usize,
 }
 
 impl HTTPProtocol {
     pub fn new(method: HttpMethod, version: Option<Version>) -> Self {
-        Self { method, version, size: 0 }
+        Self { method, version }
     }
 
     pub fn method(&self) -> &HttpMethod {
