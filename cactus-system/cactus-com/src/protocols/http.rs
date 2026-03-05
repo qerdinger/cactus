@@ -77,7 +77,11 @@ impl Protocol for HttpProtocImpl {
         ProtocolType::Http
     }
 
-    fn make_resp(&self) -> &[u8] {
-        todo!()
+    fn make_resp(&self, body: &str) -> Vec<u8> {
+        format!("HTTP/1.1 200 OK
+Content-length: {}
+Content-type: text/plain; charset=UTF-8
+
+{}", body.len(), body).into_bytes()
     }
 }

@@ -21,7 +21,7 @@ impl Protocol for WSProtocolImpl {
         ProtocolType::WebSocket
     }
 
-    fn make_resp(&self) -> &[u8] {
+    fn make_resp(&self, body: &str) -> Vec<u8> {
         todo!()
     }
 }

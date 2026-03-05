@@ -150,20 +150,19 @@ Content-type: text/plain; charset=UTF-8
 
                 let request = MagicRequest::new(&buf, n);
 
-                fn resp(_obj: &dyn Protocol) {
-                    println!("{:?}", _obj.protocol());
+                fn make_resp(_obj: &dyn Protocol, data: &str) -> Vec<u8> {
+                    _obj.make_resp(data)
                 }
 
                 if let Some(req) = &request {
                     let protocol = req.protocol();
-                    println!("request.protocol= {:?}", protocol);
-                }
+                    let data2 = make_resp(protocol, &format!("The request's been executed using {:?}", req));
+                    //println!("request.protocol.data2 = {:?}", data2);
 
-                println!("request= {:?}", request);
-
-                if let Err(e) = socket.write_all(data.as_bytes()).await {
-                    eprintln!("failed to write to socket; err = {:?}", e);
-                    return;
+                    if let Err(e) = socket.write_all(&data2).await {
+                        eprintln!("failed to write to socket; err = {:?}", e);
+                        return;
+                    }
                 }
             }
         });
