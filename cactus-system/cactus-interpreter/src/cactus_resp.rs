@@ -35,11 +35,11 @@ impl Into<CactusResponse> for Value {
                 match (st.as_u64(), ts.as_f64()) {
                     (Some(st_u64), Some(ts_f64)) => {
                         return CactusResponse::ok(st_u64 as u16, ts_f64, pl.to_owned())
-                    },
+                    }
                     _ => {}
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         };
         CactusResponse::error("error whilst casting into CactusResponse".to_string())
     }

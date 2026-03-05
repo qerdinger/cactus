@@ -7,3 +7,7 @@ edition = "2024"
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0.102"
 regex = "1.12.3"
+cactus-foundation = { path = "../cactus-foundation" }
+strum = "0.28.0"
+strum_macros = "0.28.0"
+enum_dispatch = "0.3"

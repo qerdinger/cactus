@@ -1,16 +1,18 @@
+use cactus_com::magic_request::MagicRequest;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
-use cactus_com::magic_request::MagicRequest;
 use log::error;
 use serde_json::Value as JsonValue;
 use std::env;
 use std::time::Instant;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpListener;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
-use tokio::net::TcpListener;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use cactus_com::protocol::Protocol;
+use cactus_com::protocol_enum::ProtocolImpl;
 
 mod registry;
 use crate::registry::Registry;
@@ -146,9 +148,19 @@ Content-type: text/plain; charset=UTF-8
 
 {}", 12, concat!("Hello There!"));
 
-                let request = MagicRequest::new(&buf);
+                let request = MagicRequest::new(&buf, n);
+
+                fn test(_obj: &dyn Protocol) {
+                    println!("{:?}", _obj.protocol());
+                }
+
+                if let Some(req) = &request {
+                    let protocol = req.protocol();
+                    test(protocol);
+                    println!("request.protocol= {:?}", protocol);
+                }
+
                 println!("request= {:?}", request);
-                println!("request.protocol= {:?}", request.unwrap().protocol());
 
                 if let Err(e) = socket.write_all(data.as_bytes()).await {
                     eprintln!("failed to write to socket; err = {:?}", e);
