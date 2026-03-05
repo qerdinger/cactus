@@ -1,14 +1,16 @@
 use crate::protocols::http_method::HttpMethod;
 use cactus_foundation::std::version::Version;
 use std::str::FromStr;
+use crate::protocol::Protocol;
+use crate::protocol_enum::{ProtocolImpl, ProtocolType};
 
 #[derive(Debug)]
-pub struct HTTPProtocol {
+pub struct HttpProtocImpl {
     method: HttpMethod,
     version: Option<Version>,
 }
 
-impl HTTPProtocol {
+impl HttpProtocImpl {
     pub fn new(method: HttpMethod, version: Option<Version>) -> Self {
         Self { method, version }
     }
@@ -53,19 +55,25 @@ fn parse_request_line(value: &str) -> Option<(HttpMethod, &str, &str, Version)> 
     Some((method, path, protocol_str, Version::new(major, minor)))
 }
 
-impl TryFrom<&str> for HTTPProtocol {
+impl TryFrom<&str> for HttpProtocImpl {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value.contains("HTTP/") {
             // RFC 2145
             if let Some((method, path, protocol, version)) = parse_request_line(value) {
-                return Ok(HTTPProtocol::new(method, Some(version)));
+                return Ok(HttpProtocImpl::new(method, Some(version)));
             }
 
             anyhow::bail!("HTTP request line fails parsing")
         } else {
             anyhow::bail!("not http")
         }
+    }
+}
+
+impl Protocol for HttpProtocImpl {
+    fn protocol(&self) -> ProtocolType {
+        ProtocolType::Http
     }
 }

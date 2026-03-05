@@ -1,12 +1,15 @@
 use cactus_foundation::std::version::Version;
 use regex::Regex;
+use crate::protocol::Protocol;
+use crate::protocol_enum::ProtocolType;
+use crate::protocols::http::HttpProtocImpl;
 
 #[derive(Debug)]
-pub struct HTTPSProtocol {
+pub struct HttpsProtocImpl {
     version: Option<Version>,
 }
 
-impl TryFrom<&str> for HTTPSProtocol {
+impl TryFrom<&str> for HttpsProtocImpl {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -19,9 +22,15 @@ impl TryFrom<&str> for HTTPSProtocol {
                 Some(Version::new(major, minor))
             });
 
-            Ok(HTTPSProtocol { version })
+            Ok(HttpsProtocImpl { version })
         } else {
             anyhow::bail!("not http")
         }
+    }
+}
+
+impl Protocol for HttpsProtocImpl {
+    fn protocol(&self) -> ProtocolType {
+        ProtocolType::Https
     }
 }

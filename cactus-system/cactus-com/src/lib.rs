@@ -1,3 +1,4 @@
 pub mod magic_request;
-mod protocol;
+pub mod protocol_enum;
+pub mod protocol;
 mod protocols;

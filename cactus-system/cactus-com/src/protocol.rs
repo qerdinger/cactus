@@ -1,23 +1,23 @@
-use crate::protocols::http::HTTPProtocol;
-use crate::protocols::https::HTTPSProtocol;
-use crate::protocols::ws::WSProtocol;
+use enum_dispatch::enum_dispatch;
 
-#[derive(Debug)]
-pub enum Protocol {
-    Http(HTTPProtocol),
-    Https(HTTPSProtocol),
-    WebSocket(WSProtocol),
-    None,
-}
+#[allow(unused_imports)]
+use crate::protocol_enum::{ProtocolImpl, ProtocolType};
 
-impl TryFrom<&str> for Protocol {
-    type Error = anyhow::Error;
+/*
+Protocol implementation
+Need to here for enum_dispatch macro
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        HTTPProtocol::try_from(value)
-            .map(Protocol::Http)
-            .or_else(|_| HTTPSProtocol::try_from(value).map(Protocol::Https))
-            .or_else(|_| WSProtocol::try_from(value).map(Protocol::WebSocket))
-            .or_else(|_| Ok(Protocol::None))
-    }
+List all protocol implementations below, for being integrated into enum_dispatch
+Also see : protocol_enum.rs
+ */
+#[allow(unused_imports)]
+use crate::protocols::http::HttpProtocImpl;
+#[allow(unused_imports)]
+use crate::protocols::https::HttpsProtocImpl;
+#[allow(unused_imports)]
+use crate::protocols::ws::WSProtocolImpl;
+
+#[enum_dispatch]
+pub trait Protocol {
+    fn protocol(&self) -> ProtocolType;
 }
