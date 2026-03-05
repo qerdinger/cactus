@@ -1,4 +1,6 @@
 use cactus_com::magic_request::MagicRequest;
+use cactus_com::protocol::Protocol;
+use cactus_com::protocol_enum::ProtocolImpl;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
@@ -11,8 +13,6 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
-use cactus_com::protocol::Protocol;
-use cactus_com::protocol_enum::ProtocolImpl;
 
 mod registry;
 use crate::registry::Registry;
@@ -150,13 +150,12 @@ Content-type: text/plain; charset=UTF-8
 
                 let request = MagicRequest::new(&buf, n);
 
-                fn test(_obj: &dyn Protocol) {
+                fn resp(_obj: &dyn Protocol) {
                     println!("{:?}", _obj.protocol());
                 }
 
                 if let Some(req) = &request {
                     let protocol = req.protocol();
-                    test(protocol);
                     println!("request.protocol= {:?}", protocol);
                 }
 

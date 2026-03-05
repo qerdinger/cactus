@@ -20,4 +20,5 @@ use crate::protocols::ws::WSProtocolImpl;
 #[enum_dispatch]
 pub trait Protocol {
     fn protocol(&self) -> ProtocolType;
+    fn make_resp(&self) -> &[u8];
 }

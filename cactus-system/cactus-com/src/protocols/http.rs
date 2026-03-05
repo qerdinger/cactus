@@ -1,8 +1,8 @@
+use crate::protocol::Protocol;
+use crate::protocol_enum::ProtocolType;
 use crate::protocols::http_method::HttpMethod;
 use cactus_foundation::std::version::Version;
 use std::str::FromStr;
-use crate::protocol::Protocol;
-use crate::protocol_enum::{ProtocolImpl, ProtocolType};
 
 #[derive(Debug)]
 pub struct HttpProtocImpl {
@@ -75,5 +75,9 @@ impl TryFrom<&str> for HttpProtocImpl {
 impl Protocol for HttpProtocImpl {
     fn protocol(&self) -> ProtocolType {
         ProtocolType::Http
+    }
+
+    fn make_resp(&self) -> &[u8] {
+        todo!()
     }
 }
