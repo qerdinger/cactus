@@ -83,12 +83,6 @@ macro_rules! header_formatting {
     }};
 }
 
-macro_rules! body_formatting {
-    ($builder:expr, $body:expr) => {{
-        $builder.assign_body($body);
-    }};
-}
-
 impl Protocol for HttpProtocImpl {
     fn protocol(&self) -> ProtocolType {
         ProtocolType::Http
@@ -103,10 +97,9 @@ Content-type: text/plain; charset=UTF-8
     }*/
 
     fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
-        let mut builder = HTTPMagicResponseBuilder::new();
+        let mut builder = HTTPMagicResponseBuilder::new(body);
 
         header_formatting!(builder, "1.1", 200, "OK", body);
-        body_formatting!(builder, body);
         Box::new(builder)
     }
 }
