@@ -5,28 +5,25 @@ use crate::protocols::http_status::HttpStatus;
 pub struct HTTPMagicResponseBuilder {
     headers: Vec<String>,
     status: HttpStatus,
-    body: Option<String>,
+    body: String,
 }
 
 impl MagicResponseBuilder for HTTPMagicResponseBuilder {
-    fn new() -> Self {
+    fn new<S: Into<String>>(body: S) -> Self {
         Self {
             status: HttpStatus::Ok,
             headers: Vec::new(),
-            body: None,
+            body: body.into(),
         }
     }
 
+    #[inline]
     fn add_header_str(&mut self, header: &str) -> &mut dyn MagicResponseBuilder {
         self.headers.push(header.to_string());
         self
     }
 
-    fn assign_body_str(&mut self, body: &str) -> &mut dyn MagicResponseBuilder {
-        self.body = Some(body.to_string());
-        self
-    }
-
+    #[inline]
     fn set_status(&mut self, status: HttpStatus) -> &mut dyn MagicResponseBuilder {
         self.status = status;
         self
@@ -36,7 +33,6 @@ impl MagicResponseBuilder for HTTPMagicResponseBuilder {
         println!("MagicResponseBuilder::build()");
         println!("{:#?}", self);
         let _headers_str = self.headers.join("\r\n");
-        let _body = self.body.clone().unwrap_or_else(|| "".to_owned());
         Vec::new()
     }
 }
