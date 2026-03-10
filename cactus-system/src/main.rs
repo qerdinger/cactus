@@ -1,14 +1,12 @@
 use cactus_com::magic_request::MagicRequest;
+use cactus_com::magic_response_builder::MagicResponseBuilderExt;
 use cactus_com::protocol::Protocol;
 use cactus_com::protocol_enum::ProtocolImpl;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
-use log::error;
-use serde_json::Value as JsonValue;
 use std::env;
-use std::time::Instant;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tracing::{info, Level};
@@ -141,24 +139,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("{}b received", n);
                 println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
 
-
-                let data = format!("HTTP/1.1 200 OK
-Content-length: {}
-Content-type: text/plain; charset=UTF-8
-
-{}", 12, concat!("Hello There!"));
-
                 let request = MagicRequest::new(&buf, n);
 
-                fn make_resp(_obj: &dyn Protocol, data: &str) -> Vec<u8> {
+                fn make_resp(_obj: &ProtocolImpl, data: &str) -> Vec<u8> {
+                    //_obj.make_resp(|resp| {
+                    //    resp.add_header()
+                    //    resp.add_header()
+                    //    resp.add_header()
+                    //})
+
+                    //_obj.make_resp(data)
+                    //    .add_header()
+                    //    .add_header()
+                    //    .add_header()
+                    //    .add_header()
+                    //    .add_header()
+                    //    .build()
+                    info!("Here I am!");
                     _obj.make_resp(data)
+                        .add_header("")
+                        .build()
+
                 }
 
                 if let Some(req) = &request {
                     let protocol = req.protocol();
                     let data2 = make_resp(protocol, &format!("The request's been executed using {:?}", req));
-                    //println!("request.protocol.data2 = {:?}", data2);
-
+                    println!("billable {}ms", req.time_elapsed());
                     if let Err(e) = socket.write_all(&data2).await {
                         eprintln!("failed to write to socket; err = {:?}", e);
                         return;

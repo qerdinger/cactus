@@ -1,5 +1,5 @@
 use enum_dispatch::enum_dispatch;
-
+use crate::magic_response_builder::MagicResponseBuilder;
 #[allow(unused_imports)]
 use crate::protocol_enum::{ProtocolImpl, ProtocolType};
 
@@ -20,5 +20,5 @@ use crate::protocols::ws::WSProtocolImpl;
 #[enum_dispatch]
 pub trait Protocol {
     fn protocol(&self) -> ProtocolType;
-    fn make_resp(&self, body: &str) -> Vec<u8>;
+    fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder>;
 }

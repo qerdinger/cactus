@@ -58,6 +58,7 @@ dependencies = [
  "cactus-foundation",
  "chrono",
  "enum_dispatch",
+ "log",
  "regex",
  "strum",
  "strum_macros 0.28.0",

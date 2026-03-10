@@ -1,3 +1,4 @@
+use crate::magic_response_builder::MagicResponseBuilder;
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
 
@@ -21,7 +22,7 @@ impl Protocol for WSProtocolImpl {
         ProtocolType::WebSocket
     }
 
-    fn make_resp(&self, body: &str) -> Vec<u8> {
+    fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
         todo!()
     }
 }
