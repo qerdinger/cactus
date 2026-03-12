@@ -1,6 +1,8 @@
 use crate::magic_response_builder::MagicResponseBuilder;
 use crate::protocols::http_status::HttpStatus;
 
+const HTTP_SEPARATOR: &str = "\r\n";
+
 #[derive(Debug)]
 pub struct HTTPMagicResponseBuilder {
     headers: Vec<String>,
@@ -30,7 +32,13 @@ impl MagicResponseBuilder for HTTPMagicResponseBuilder {
     }
 
     fn build(&self) -> Vec<u8> {
-        format!("{}\r\n\r\n{}", self.headers.join("\r\n"), self.body)
+        format!("{}{}{}{}",
+                self.headers
+                    .join(HTTP_SEPARATOR),
+                HTTP_SEPARATOR,
+                HTTP_SEPARATOR,
+                self.body
+        )
             .as_bytes()
             .to_vec()
     }
