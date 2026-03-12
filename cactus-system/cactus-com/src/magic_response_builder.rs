@@ -1,7 +1,9 @@
 use crate::protocols::http_status::HttpStatus;
 
 pub trait MagicResponseBuilder {
-    fn new<S: Into<String>>(body: S) -> Self where Self: Sized;
+    fn new<S: Into<String>>(body: S) -> Self
+    where
+        Self: Sized;
     fn add_header_str(&mut self, header: &str) -> &mut dyn MagicResponseBuilder;
     fn set_status(&mut self, status: HttpStatus) -> &mut dyn MagicResponseBuilder;
     fn build(&self) -> Vec<u8>;

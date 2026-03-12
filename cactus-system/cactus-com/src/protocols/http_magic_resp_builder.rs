@@ -30,9 +30,8 @@ impl MagicResponseBuilder for HTTPMagicResponseBuilder {
     }
 
     fn build(&self) -> Vec<u8> {
-        println!("MagicResponseBuilder::build()");
-        println!("{:#?}", self);
-        let _headers_str = self.headers.join("\r\n");
-        Vec::new()
+        format!("{}\r\n\r\n{}", self.headers.join("\r\n"), self.body)
+            .as_bytes()
+            .to_vec()
     }
 }

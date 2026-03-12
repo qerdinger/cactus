@@ -141,32 +141,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 let request = MagicRequest::new(&buf, n);
 
-                fn make_resp(_obj: &ProtocolImpl, data: &str) -> Vec<u8> {
-                    //_obj.make_resp(|resp| {
-                    //    resp.add_header()
-                    //    resp.add_header()
-                    //    resp.add_header()
-                    //})
-
-                    //_obj.make_resp(data)
-                    //    .add_header()
-                    //    .add_header()
-                    //    .add_header()
-                    //    .add_header()
-                    //    .add_header()
-                    //    .build()
-                    info!("Here I am!");
-                    _obj.make_resp(data)
-                        .add_header("")
-                        .build()
-
-                }
-
                 if let Some(req) = &request {
-                    let protocol = req.protocol();
-                    let data2 = make_resp(protocol, &format!("The request's been executed using {:?}", req));
+                    let protoc_impl = req.protocol();
+                    let protocol = protoc_impl as &dyn Protocol;
+                    let data = protocol
+                        .make_resp(&format!("The request's been executed using {:?}", req))
+                        //.add_header("Content-Language: fr-FR")
+                        .build();
+
                     println!("billable {}ms", req.time_elapsed());
-                    if let Err(e) = socket.write_all(&data2).await {
+                    if let Err(e) = socket.write_all(&data).await {
                         eprintln!("failed to write to socket; err = {:?}", e);
                         return;
                     }

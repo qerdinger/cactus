@@ -1,10 +1,10 @@
+use crate::magic_response_builder::{MagicResponseBuilder, MagicResponseBuilderExt};
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
+use crate::protocols::http_magic_resp_builder::HTTPMagicResponseBuilder;
 use crate::protocols::http_method::HttpMethod;
 use cactus_foundation::std::version::Version;
 use std::str::FromStr;
-use crate::magic_response_builder::{MagicResponseBuilder, MagicResponseBuilderExt};
-use crate::protocols::http_magic_resp_builder::HTTPMagicResponseBuilder;
 
 #[derive(Debug)]
 pub struct HttpProtocImpl {

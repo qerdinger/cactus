@@ -1,7 +1,7 @@
-use enum_dispatch::enum_dispatch;
 use crate::magic_response_builder::MagicResponseBuilder;
 #[allow(unused_imports)]
 use crate::protocol_enum::{ProtocolImpl, ProtocolType};
+use enum_dispatch::enum_dispatch;
 
 /*
 Protocol implementation
