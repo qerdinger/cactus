@@ -1,7 +1,7 @@
-use enum_dispatch::enum_dispatch;
 use crate::protocols::http::HttpProtocImpl;
 use crate::protocols::https::HttpsProtocImpl;
 use crate::protocols::ws::WSProtocolImpl;
+use enum_dispatch::enum_dispatch;
 
 #[derive(Debug)]
 pub enum ProtocolType {

@@ -1,8 +1,10 @@
+use crate::magic_response_builder::{MagicResponseBuilder, MagicResponseBuilderExt};
+use crate::protocol::Protocol;
+use crate::protocol_enum::ProtocolType;
+use crate::protocols::http_magic_resp_builder::HTTPMagicResponseBuilder;
 use crate::protocols::http_method::HttpMethod;
 use cactus_foundation::std::version::Version;
 use std::str::FromStr;
-use crate::protocol::Protocol;
-use crate::protocol_enum::{ProtocolImpl, ProtocolType};
 
 #[derive(Debug)]
 pub struct HttpProtocImpl {
@@ -61,7 +63,7 @@ impl TryFrom<&str> for HttpProtocImpl {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value.contains("HTTP/") {
             // RFC 2145
-            if let Some((method, path, protocol, version)) = parse_request_line(value) {
+            if let Some((method, _path, _protocol, version)) = parse_request_line(value) {
                 return Ok(HttpProtocImpl::new(method, Some(version)));
             }
 
@@ -72,8 +74,32 @@ impl TryFrom<&str> for HttpProtocImpl {
     }
 }
 
+macro_rules! header_formatting {
+    ($builder:expr, $protoc_version:expr, $status:expr, $status_def:expr, $body:expr) => {{
+        $builder
+            .add_header(format!("HTTP/{} {} {}", $protoc_version, $status, $status_def))
+            .add_header(format!("Content-length: {}", $body.len()))
+            .add_header("Content-type: text/plain; charset=UTF-8");
+    }};
+}
+
 impl Protocol for HttpProtocImpl {
     fn protocol(&self) -> ProtocolType {
         ProtocolType::Http
+    }
+
+    /*fn make_resp(&self, body: &str) -> Vec<u8> {
+        format!("HTTP/1.1 200 OK
+Content-length: {}
+Content-type: text/plain; charset=UTF-8
+
+{}", body.len(), body).into_bytes()
+    }*/
+
+    fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
+        let mut builder = HTTPMagicResponseBuilder::new(body);
+
+        header_formatting!(builder, "1.1", 200, "OK", body);
+        Box::new(builder)
     }
 }

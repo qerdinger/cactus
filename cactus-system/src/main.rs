@@ -1,18 +1,16 @@
 use cactus_com::magic_request::MagicRequest;
+use cactus_com::magic_response_builder::MagicResponseBuilderExt;
+use cactus_com::protocol::Protocol;
+use cactus_com::protocol_enum::ProtocolImpl;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
-use log::error;
-use serde_json::Value as JsonValue;
 use std::env;
-use std::time::Instant;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
-use cactus_com::protocol::Protocol;
-use cactus_com::protocol_enum::ProtocolImpl;
 
 mod registry;
 use crate::registry::Registry;
@@ -141,30 +139,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("{}b received", n);
                 println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
 
-
-                let data = format!("HTTP/1.1 200 OK
-Content-length: {}
-Content-type: text/plain; charset=UTF-8
-
-{}", 12, concat!("Hello There!"));
-
                 let request = MagicRequest::new(&buf, n);
 
-                fn test(_obj: &dyn Protocol) {
-                    println!("{:?}", _obj.protocol());
-                }
-
                 if let Some(req) = &request {
-                    let protocol = req.protocol();
-                    test(protocol);
-                    println!("request.protocol= {:?}", protocol);
-                }
+                    let protoc_impl = req.protocol();
+                    let protocol = protoc_impl as &dyn Protocol;
+                    let data = protocol
+                        .make_resp(&format!("The request's been executed using {:?}", req))
+                        //.add_header("Content-Language: fr-FR")
+                        .build();
 
-                println!("request= {:?}", request);
-
-                if let Err(e) = socket.write_all(data.as_bytes()).await {
-                    eprintln!("failed to write to socket; err = {:?}", e);
-                    return;
+                    println!("billable {}ms", req.time_elapsed());
+                    if let Err(e) = socket.write_all(&data).await {
+                        eprintln!("failed to write to socket; err = {:?}", e);
+                        return;
+                    }
                 }
             }
         });

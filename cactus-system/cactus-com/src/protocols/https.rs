@@ -1,8 +1,8 @@
-use cactus_foundation::std::version::Version;
-use regex::Regex;
+use crate::magic_response_builder::MagicResponseBuilder;
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
-use crate::protocols::http::HttpProtocImpl;
+use cactus_foundation::std::version::Version;
+use regex::Regex;
 
 #[derive(Debug)]
 pub struct HttpsProtocImpl {
@@ -32,5 +32,9 @@ impl TryFrom<&str> for HttpsProtocImpl {
 impl Protocol for HttpsProtocImpl {
     fn protocol(&self) -> ProtocolType {
         ProtocolType::Https
+    }
+
+    fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
+        todo!()
     }
 }

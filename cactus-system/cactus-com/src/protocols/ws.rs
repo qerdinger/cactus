@@ -1,6 +1,6 @@
+use crate::magic_response_builder::MagicResponseBuilder;
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
-use crate::protocols::http::HttpProtocImpl;
 
 #[derive(Debug)]
 pub struct WSProtocolImpl;
@@ -20,5 +20,9 @@ impl TryFrom<&str> for WSProtocolImpl {
 impl Protocol for WSProtocolImpl {
     fn protocol(&self) -> ProtocolType {
         ProtocolType::WebSocket
+    }
+
+    fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
+        todo!()
     }
 }
