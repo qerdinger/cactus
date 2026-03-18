@@ -5,11 +5,12 @@ use cactus_interpreter::worker_pool::WorkerPool;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::info;
+use cactus_foundation::cactuize::Cactuize;
 
 pub struct Registry {
     thread_ledger: HashMap<String, WorkerPool>,
     parallel_ledger: HashMap<String, Arc<ParallelWorker>>,
-    registered: Vec<Function>,
+    registered: Vec<Cactuize>,
     unregistered: Vec<Function>,
 }
 
@@ -23,17 +24,17 @@ impl Registry {
         }
     }
 
-    pub fn register_registered(&mut self, fragments: Vec<Fragment>, function: Function) {
+    pub fn register_to_thread_pool(&mut self, fragments: Vec<Fragment>, function: Cactuize) {
         self.thread_ledger.insert(
             function.name().to_string(),
-            WorkerPool::new(fragments, function.name().to_string(), 4),
+            WorkerPool::new(fragments, function.name(), 4),
         );
         info!("{} registered new registration (thread pool)", function.name());
 
         self.registered.push(function);
     }
 
-    pub fn register_parallel(&mut self, fragments: Vec<Fragment>, function: Function) {
+    pub fn register_to_parallel_pool(&mut self, fragments: Vec<Fragment>, function: Cactuize) {
         self.parallel_ledger.insert(
             function.name().to_string(),
             Arc::new(ParallelWorker::new(fragments, function.name().to_string(), 4)),
@@ -47,7 +48,7 @@ impl Registry {
         self.unregistered.push(function);
     }
 
-    pub fn get_registered(&self) -> &[Function] {
+    pub fn get_registered(&self) -> &[Cactuize] {
         &self.registered
     }
 
