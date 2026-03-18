@@ -10,7 +10,7 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn new(name: String, lang: Option<Arc<Lang>>, args: Vec<Argument>) -> Function {
+    pub fn new(name: String, lang: Option<Arc<Lang>>, args: Vec<Argument>) -> Self {
         Self { name, lang, args }
     }
 
@@ -19,10 +19,10 @@ impl Function {
     }
 
     pub fn lang(&self) -> Option<&Lang> {
-        self.lang.as_ref().map(|lang| lang as &_)
+        self.lang.as_deref()
     }
 
-    pub fn args(&self) -> &Vec<Argument> {
+    pub fn args(&self) -> &[Argument] {
         &self.args
     }
 }
