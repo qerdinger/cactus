@@ -14,3 +14,4 @@ enum_dispatch = "0.3"
 chrono = "0.4.44"
 uuid = { version = "1.21.0", features = ["v4"] }
 log = "0.4.28"
+url = "2.5.8"

@@ -1,4 +1,5 @@
 use crate::protocol_enum::ProtocolImpl;
+use anyhow::anyhow;
 use chrono::prelude::*;
 use uuid::Uuid;
 
@@ -12,10 +13,10 @@ pub struct MagicRequest {
 }
 
 impl MagicRequest {
-    pub fn new(buffer: &[u8], size: usize) -> Option<Self> {
-        let text = std::str::from_utf8(buffer).ok()?;
-        let protocol = ProtocolImpl::parse(text).ok()?;
-        Some(Self {
+    pub fn new(buffer: &[u8], size: usize) -> Result<Self, anyhow::Error> {
+        let text = std::str::from_utf8(buffer).map_err(|e| anyhow!(e))?;
+        let protocol = ProtocolImpl::parse(text).map_err(|e| anyhow!(e))?;
+        Ok(Self {
             protocol,
 
             size,

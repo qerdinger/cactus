@@ -3,19 +3,28 @@ use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
 use crate::protocols::http_magic_resp_builder::HTTPMagicResponseBuilder;
 use crate::protocols::http_method::HttpMethod;
+use anyhow::anyhow;
 use cactus_foundation::std::version::Version;
 use std::str::FromStr;
+use url::Url;
+
+const INTERNAL_URL: &str = "http://cactus-sys.runtime.internal";
 
 #[derive(Debug)]
 pub struct HttpProtocImpl {
     method: HttpMethod,
     version: Option<Version>,
     path: String,
+    query_strings: Vec<String>,
 }
 
 impl HttpProtocImpl {
-    pub fn new<S: Into<String>>(method: HttpMethod, version: Option<Version>, path: S) -> Self {
-        Self { method, version, path: path.into() }
+    pub fn new<S>(method: HttpMethod, version: Option<Version>, path_with_queries: S) -> Result<Self, anyhow::Error>
+    where
+        S: Into<String>
+    {
+        let data_url = Url::parse(&format!("{INTERNAL_URL}{}", path_with_queries.into())).map_err(|e| anyhow!(e))?;
+        Ok(Self { method, version, path: data_url.path().to_string(), query_strings: data_url.query().iter().map(|s| s.to_string()).collect() })
     }
 
     pub fn method(&self) -> &HttpMethod {
@@ -31,29 +40,22 @@ impl HttpProtocImpl {
     pub fn path(&self) -> &str {
         &self.path
     }
+
+    pub fn query_strings(&self) -> &[String] {
+        &self.query_strings
+    }
 }
 
-fn parse_request_line(value: &str) -> Result<HttpProtocImpl, std::io::Error> {
+fn parse_request_line(value: &str) -> Result<HttpProtocImpl, anyhow::Error> {
     let mut parts = value.split_whitespace();
 
-    let method = parts.next().ok_or(std::io::Error::new(
-        std::io::ErrorKind::InvalidInput,
-        "Missing method",
-    ))?;
+    let method = parts.next().ok_or_else(|| anyhow!("Missing method"))?;
 
-    let path = parts.next().ok_or(std::io::Error::new(
-        std::io::ErrorKind::InvalidInput,
-        "Missing path",
-    ))?;
+    let path = parts.next().ok_or_else(|| anyhow!("Missing path"))?;
 
-    let version_part = parts.next().ok_or(std::io::Error::new(
-        std::io::ErrorKind::InvalidInput,
-        "Missing version",
-    ))?;
+    let version_part = parts.next().ok_or_else(|| anyhow!("Missing version"))?;
 
-    let (_, version_str) = version_part.split_once('/').ok_or(
-        std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid version format"),
-    )?;
+    let (_, version_str) = version_part.split_once('/').ok_or_else(|| anyhow!("Missing version"))?;
 
     let (major, minor) = match version_str.split_once('.') {
         Some((maj, min)) => (
@@ -83,7 +85,7 @@ fn parse_request_line(value: &str) -> Result<HttpProtocImpl, std::io::Error> {
         method,
         Some(Version::new(major, minor)),
         path,
-    ))
+    )?)
 }
 
 impl TryFrom<&str> for HttpProtocImpl {

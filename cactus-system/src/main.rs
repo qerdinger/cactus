@@ -176,12 +176,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 };
 
-                //println!("{}b received", n);
-                //println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
+                println!("{}b received", n);
+                println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
 
                 let request = MagicRequest::new(&buf, n);
 
-                if let Some(req) = &request {
+                if let Ok(req) = &request {
                     let protoc_impl = req.protocol();
                     let protocol = protoc_impl as &dyn Protocol;
                     let data = protocol
@@ -189,7 +189,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         //.add_header("Content-Language: fr-FR")
                         .build();
 
-                    //println!("billable {}ms", req.time_elapsed());
+                    println!("billable {}ms", req.time_elapsed());
                     if let Err(e) = socket.write_all(&data).await {
                         eprintln!("failed to write to socket; err = {:?}", e);
                         return;
