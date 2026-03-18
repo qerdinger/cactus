@@ -10,11 +10,12 @@ use std::str::FromStr;
 pub struct HttpProtocImpl {
     method: HttpMethod,
     version: Option<Version>,
+    path: String,
 }
 
 impl HttpProtocImpl {
-    pub fn new(method: HttpMethod, version: Option<Version>) -> Self {
-        Self { method, version }
+    pub fn new<S: Into<String>>(method: HttpMethod, version: Option<Version>, path: S) -> Self {
+        Self { method, version, path: path.into() }
     }
 
     pub fn method(&self) -> &HttpMethod {
@@ -26,9 +27,13 @@ impl HttpProtocImpl {
             Some(version)
         } else { None }
     }
+
+    pub fn path(&self) -> &str {
+        &self.path
+    }
 }
 
-fn parse_request_line(value: &str) -> Option<(HttpMethod, &str, &str, Version)> {
+fn parse_request_line(value: &str) -> Option<HttpProtocImpl> {
     let mut parts = value.split_whitespace();
 
     let method = parts.next()?;
@@ -54,7 +59,8 @@ fn parse_request_line(value: &str) -> Option<(HttpMethod, &str, &str, Version)> 
         Err(_) => return None,
     };
 
-    Some((method, path, protocol_str, Version::new(major, minor)))
+    //Some((method, path, protocol_str, Version::new(major, minor)))
+    Some(HttpProtocImpl::new(method, Some(Version::new(major, minor)), path))
 }
 
 impl TryFrom<&str> for HttpProtocImpl {
@@ -63,8 +69,8 @@ impl TryFrom<&str> for HttpProtocImpl {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value.contains("HTTP/") {
             // RFC 2145
-            if let Some((method, _path, _protocol, version)) = parse_request_line(value) {
-                return Ok(HttpProtocImpl::new(method, Some(version)));
+            if let Some(http_impl) = parse_request_line(value) {
+                return Ok(http_impl);
             }
 
             anyhow::bail!("HTTP request line fails parsing")
