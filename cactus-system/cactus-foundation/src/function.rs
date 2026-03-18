@@ -2,7 +2,7 @@ use crate::argument::Argument;
 use crate::lang::Lang;
 use std::sync::Arc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Function {
     name: String,
     lang: Option<Arc<Lang>>,

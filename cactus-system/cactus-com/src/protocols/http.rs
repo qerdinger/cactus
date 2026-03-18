@@ -25,7 +25,19 @@ impl HttpProtocImpl {
         S: Into<String>
     {
         let data_url = Url::parse(&format!("{INTERNAL_URL}{}", path_with_queries.into())).map_err(|e| anyhow!(e))?;
-        Ok(Self { method, version, path: data_url.path().to_string(), query_strings: data_url.query_pairs().map(|(k, v)| (k.to_string(), v.to_string())).collect() })
+        Ok(
+            Self {
+                method,
+                version,
+                path: data_url.path().to_string(),
+                query_strings: data_url
+                    .query_pairs()
+                    .map(|(k, v)|
+                        (k.to_string(), v.to_string())
+                    )
+                    .collect()
+            }
+        )
     }
 
     pub fn method(&self) -> &HttpMethod {
@@ -94,12 +106,7 @@ impl TryFrom<&str> for HttpProtocImpl {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value.contains("HTTP/") {
-            // RFC 2145
-            if let Ok(http_impl) = parse_request_line(value) {
-                return Ok(http_impl);
-            }
-
-            anyhow::bail!("HTTP request line fails parsing")
+            parse_request_line(value) // RFC 2145
         } else {
             anyhow::bail!("not http")
         }

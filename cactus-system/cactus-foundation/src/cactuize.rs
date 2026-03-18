@@ -1,6 +1,7 @@
 use crate::function::Function;
 use std::ops::Deref;
 
+#[derive(Debug)]
 pub struct Cactuize {
     inner: Function,
 }
