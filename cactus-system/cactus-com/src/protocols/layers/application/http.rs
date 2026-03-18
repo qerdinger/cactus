@@ -1,11 +1,11 @@
-use std::collections::HashMap;
 use crate::magic_response_builder::{MagicResponseBuilder, MagicResponseBuilderExt};
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
-use crate::protocols::http_magic_resp_builder::HTTPMagicResponseBuilder;
-use crate::protocols::http_method::HttpMethod;
+use crate::protocols::layers::application::http_magic_resp_builder::HTTPMagicResponseBuilder;
+use crate::protocols::layers::application::http_method::HttpMethod;
 use anyhow::anyhow;
 use cactus_foundation::std::version::Version;
+use std::collections::HashMap;
 use std::str::FromStr;
 use url::Url;
 
@@ -22,7 +22,7 @@ pub struct HttpProtocImpl {
 impl HttpProtocImpl {
     pub fn new<S>(method: HttpMethod, version: Option<Version>, path_with_queries: S) -> Result<Self, anyhow::Error>
     where
-        S: Into<String>
+        S: Into<String>,
     {
         let data_url = Url::parse(&format!("{INTERNAL_URL}{}", path_with_queries.into())).map_err(|e| anyhow!(e))?;
         Ok(
@@ -35,7 +35,7 @@ impl HttpProtocImpl {
                     .map(|(k, v)|
                         (k.to_string(), v.to_string())
                     )
-                    .collect()
+                    .collect(),
             }
         )
     }

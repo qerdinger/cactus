@@ -1,22 +1,26 @@
+use cactus_com::client::Client;
 use cactus_com::magic_request::MagicRequest;
+use cactus_com::protocol::Protocol;
+use cactus_com::protocols::layers::transport::tcp::TcpListener;
+use cactus_com::utils::rate_limiter::RateLimiter;
 use cactus_foundation::cactuize::Cactuize;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
+use log::error;
+use serde_json::Value as JsonValue;
 use socket2::{Domain, Protocol as SocketProtocol, Socket, Type};
 use std::env;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use log::error;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::TcpListener;
-use tokio::sync::Semaphore;
+use tokio::net::TcpStream;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
-use serde_json::Value as JsonValue;
-use cactus_com::protocol::Protocol;
 
+mod handler;
+use crate::handler::handle_conn;
 mod registry;
 use crate::registry::Registry;
 
@@ -26,27 +30,8 @@ fn tracing_subscriber_handler(max_level: Level) {
     tracing::subscriber::set_global_default(subscriber).unwrap();
 }
 
-fn build_listener(addr: &str, backlog: i32) -> Result<TcpListener, Box<dyn std::error::Error>> {
-    let socket_addr: SocketAddr = addr.parse()?;
-    let domain = if socket_addr.is_ipv4() {
-        Domain::IPV4
-    } else {
-        Domain::IPV6
-    };
-
-    let socket = Socket::new(domain, Type::STREAM, Some(SocketProtocol::TCP))?;
-    socket.set_reuse_address(true)?;
-    socket.bind(&socket_addr.into())?;
-    socket.listen(backlog)?;
-
-    let std_listener: std::net::TcpListener = socket.into();
-    std_listener.set_nonblocking(true)?;
-
-    Ok(TcpListener::from_std(std_listener)?)
-}
-
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), anyhow::Error> {
     let _args: Vec<String> = env::args().collect();
     tracing_subscriber_handler(Level::INFO);
     info!("Cactus Runtime System");
@@ -150,15 +135,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     const BACKLOG: i32 = 2048;
     const MAX_CONCURRENT_CONNECTIONS: usize = 512;
 
-    let listener = build_listener(LISTEN_ADDR, BACKLOG)?;
-    let connection_limiter = Arc::new(Semaphore::new(MAX_CONCURRENT_CONNECTIONS));
+    let listener = TcpListener::new(LISTEN_ADDR, BACKLOG)?;
+    let connection_limiter = RateLimiter::new(MAX_CONCURRENT_CONNECTIONS);
 
     loop {
         let registry = Arc::clone(&registry);
-        let permit = connection_limiter.clone().acquire_owned().await?;
+        let permit = match connection_limiter.get_permit().await {
+            Ok(p) => p,
+            Err(_) => continue,
+        };
 
-        let (mut socket, _) = match listener.accept().await {
-            Ok(conn) => conn,
+        let client = match listener.accept().await {
+            Ok((conn, sock_addr)) => Client::new(conn, sock_addr),
             Err(e) => {
                 eprintln!("failed to accept connection; err = {:?}", e);
                 drop(permit);
@@ -166,50 +154,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         };
 
+        //let permit = match connection_limiter.clone().acquire_owned().await {
+        //    Ok(p) => p,
+        //    Err(_) => continue,
+        //};
+
         tokio::spawn(async move {
-            let _permit = permit;
-            let mut buf = [0; 4096];
-
-            loop {
-                let n = match socket.read(&mut buf).await {
-                    // socket closed
-                    Ok(0) => return,
-                    Ok(n) => n,
-                    Err(e) => {
-                        eprintln!("failed to read from socket; err = {:?}", e);
-                        return;
-                    }
-                };
-
-                //println!("{}b received", n);
-                //println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
-
-                let request = MagicRequest::new(&buf, n);
-
-                if let Ok(req) = &request {
-                    let protoc_impl = req.protocol();
-
-                    if let Some(pool) = registry.get_worker_pool("simple_entrypoint_delayed") {
-                        let rslt = pool.invoke(JsonValue::Null);
-                        let rslt_value = rslt.await;
-
-                        let protocol = protoc_impl as &dyn Protocol;
-                        let data = protocol
-                            .make_resp(&format!("The request's executed using {:?}", rslt_value.payload))
-                            .build();
-
-                        if let Err(e) = socket.write_all(&data).await {
-                            eprintln!("failed to write to socket; err = {:?}", e);
-                            return;
-                        }
-                    } else {
-                        println!("no parallel worker for executing: simple_entrypoint_delayed");
-                    }
-
-
-                    //println!("billable {}ms", req.time_elapsed());
-                }
-            }
+            handle_conn(client, &registry).await.unwrap();
+            permit.forget();
         });
     }
 }

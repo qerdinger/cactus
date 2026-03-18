@@ -1,6 +1,6 @@
-use crate::protocols::http::HttpProtocImpl;
-use crate::protocols::https::HttpsProtocImpl;
-use crate::protocols::ws::WSProtocolImpl;
+use crate::protocols::layers::application::http::HttpProtocImpl;
+use crate::protocols::layers::application::https::HttpsProtocImpl;
+use crate::protocols::layers::application::ws::WSProtocolImpl;
 use enum_dispatch::enum_dispatch;
 
 #[derive(Debug)]
