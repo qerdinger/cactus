@@ -1,12 +1,12 @@
-use std::net::SocketAddr;
-use std::sync::Arc;
-use tokio::net::TcpStream;
+use crate::registry::Registry;
 use cactus_com::client::Client;
 use cactus_com::magic_request::MagicRequest;
-use serde_json::Value as JsonValue;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use cactus_com::protocol::Protocol;
-use crate::registry::Registry;
+use serde_json::Value as JsonValue;
+use std::net::SocketAddr;
+use std::sync::Arc;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
 
 pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &Arc<Registry>) -> Result<(), anyhow::Error> {
     let mut buffer = [0u8; 4096];

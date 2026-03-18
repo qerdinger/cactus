@@ -4,3 +4,4 @@ pub mod protocol;
 pub mod protocols;
 pub mod magic_response_builder;
 pub mod client;
+pub mod utils;

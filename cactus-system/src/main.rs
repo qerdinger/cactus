@@ -1,6 +1,8 @@
+use cactus_com::client::Client;
 use cactus_com::magic_request::MagicRequest;
 use cactus_com::protocol::Protocol;
 use cactus_com::protocols::layers::transport::tcp::TcpListener;
+use cactus_com::utils::rate_limiter::RateLimiter;
 use cactus_foundation::cactuize::Cactuize;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
@@ -14,10 +16,8 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-use tokio::sync::Semaphore;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
-use cactus_com::client::Client;
 
 mod handler;
 use crate::handler::handle_conn;
@@ -136,11 +136,14 @@ async fn main() -> Result<(), anyhow::Error> {
     const MAX_CONCURRENT_CONNECTIONS: usize = 512;
 
     let listener = TcpListener::new(LISTEN_ADDR, BACKLOG)?;
-    let connection_limiter = Arc::new(Semaphore::new(MAX_CONCURRENT_CONNECTIONS));
+    let connection_limiter = RateLimiter::new(MAX_CONCURRENT_CONNECTIONS);
 
     loop {
         let registry = Arc::clone(&registry);
-        let permit = connection_limiter.clone().acquire_owned().await?;
+        let permit = match connection_limiter.get_permit().await {
+            Ok(p) => p,
+            Err(_) => continue,
+        };
 
         let client = match listener.accept().await {
             Ok((conn, sock_addr)) => Client::new(conn, sock_addr),
@@ -151,10 +154,10 @@ async fn main() -> Result<(), anyhow::Error> {
             }
         };
 
-        let permit = match connection_limiter.clone().acquire_owned().await {
-            Ok(p) => p,
-            Err(_) => continue,
-        };
+        //let permit = match connection_limiter.clone().acquire_owned().await {
+        //    Ok(p) => p,
+        //    Err(_) => continue,
+        //};
 
         tokio::spawn(async move {
             handle_conn(client, &registry).await.unwrap();
