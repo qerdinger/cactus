@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::magic_response_builder::{MagicResponseBuilder, MagicResponseBuilderExt};
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
@@ -15,7 +16,7 @@ pub struct HttpProtocImpl {
     method: HttpMethod,
     version: Option<Version>,
     path: String,
-    query_strings: Vec<String>,
+    query_strings: HashMap<String, String>,
 }
 
 impl HttpProtocImpl {
@@ -24,7 +25,7 @@ impl HttpProtocImpl {
         S: Into<String>
     {
         let data_url = Url::parse(&format!("{INTERNAL_URL}{}", path_with_queries.into())).map_err(|e| anyhow!(e))?;
-        Ok(Self { method, version, path: data_url.path().to_string(), query_strings: data_url.query().iter().map(|s| s.to_string()).collect() })
+        Ok(Self { method, version, path: data_url.path().to_string(), query_strings: data_url.query_pairs().map(|(k, v)| (k.to_string(), v.to_string())).collect() })
     }
 
     pub fn method(&self) -> &HttpMethod {
@@ -41,7 +42,7 @@ impl HttpProtocImpl {
         &self.path
     }
 
-    pub fn query_strings(&self) -> &[String] {
+    pub fn query_strings(&self) -> &HashMap<String, String> {
         &self.query_strings
     }
 }
