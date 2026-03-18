@@ -25,7 +25,19 @@ impl HttpProtocImpl {
         S: Into<String>
     {
         let data_url = Url::parse(&format!("{INTERNAL_URL}{}", path_with_queries.into())).map_err(|e| anyhow!(e))?;
-        Ok(Self { method, version, path: data_url.path().to_string(), query_strings: data_url.query_pairs().map(|(k, v)| (k.to_string(), v.to_string())).collect() })
+        Ok(
+            Self {
+                method,
+                version,
+                path: data_url.path().to_string(),
+                query_strings: data_url
+                    .query_pairs()
+                    .map(|(k, v)|
+                        (k.to_string(), v.to_string())
+                    )
+                    .collect()
+            }
+        )
     }
 
     pub fn method(&self) -> &HttpMethod {
