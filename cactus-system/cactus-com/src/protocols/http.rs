@@ -106,12 +106,7 @@ impl TryFrom<&str> for HttpProtocImpl {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value.contains("HTTP/") {
-            // RFC 2145
-            if let Ok(http_impl) = parse_request_line(value) {
-                return Ok(http_impl);
-            }
-
-            anyhow::bail!("HTTP request line fails parsing")
+            parse_request_line(value) // RFC 2145
         } else {
             anyhow::bail!("not http")
         }
