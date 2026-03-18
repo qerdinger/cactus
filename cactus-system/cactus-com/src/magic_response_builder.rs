@@ -1,4 +1,4 @@
-use crate::protocols::http_status::HttpStatus;
+use crate::protocols::layers::application::http_status::HttpStatus;
 
 pub trait MagicResponseBuilder {
     fn new<S: Into<String>>(body: S) -> Self

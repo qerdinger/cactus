@@ -1,5 +1,5 @@
 use crate::magic_response_builder::MagicResponseBuilder;
-use crate::protocols::http_status::HttpStatus;
+use crate::protocols::layers::application::http_status::HttpStatus;
 
 const HTTP_SEPARATOR: &str = "\r\n";
 

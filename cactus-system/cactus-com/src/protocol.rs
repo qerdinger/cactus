@@ -11,11 +11,11 @@ List all protocol implementations below, for being integrated into enum_dispatch
 Also see : protocol_enum.rs
  */
 #[allow(unused_imports)]
-use crate::protocols::http::HttpProtocImpl;
+use crate::protocols::layers::application::http::HttpProtocImpl;
 #[allow(unused_imports)]
-use crate::protocols::https::HttpsProtocImpl;
+use crate::protocols::layers::application::https::HttpsProtocImpl;
 #[allow(unused_imports)]
-use crate::protocols::ws::WSProtocolImpl;
+use crate::protocols::layers::application::ws::WSProtocolImpl;
 
 #[enum_dispatch]
 pub trait Protocol {
