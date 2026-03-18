@@ -1,5 +1,4 @@
 use cactus_com::magic_request::MagicRequest;
-use cactus_com::protocol::Protocol;
 use cactus_foundation::cactuize::Cactuize;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
@@ -9,11 +8,14 @@ use socket2::{Domain, Protocol as SocketProtocol, Socket, Type};
 use std::env;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use log::error;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::Semaphore;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
+use serde_json::Value as JsonValue;
+use cactus_com::protocol::Protocol;
 
 mod registry;
 use crate::registry::Registry;
@@ -106,6 +108,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         registry.get_unregistered().len()
     );
 
+    let registry = Arc::new(registry);
+
     /*if let Some(pool) = registry.get_parallel_worker("simple_entrypoint_delayed") {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
@@ -150,6 +154,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let connection_limiter = Arc::new(Semaphore::new(MAX_CONCURRENT_CONNECTIONS));
 
     loop {
+        let registry = Arc::clone(&registry);
         let permit = connection_limiter.clone().acquire_owned().await?;
 
         let (mut socket, _) = match listener.accept().await {
@@ -176,24 +181,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 };
 
-                println!("{}b received", n);
-                println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
+                //println!("{}b received", n);
+                //println!("{}", &buf[0..n].iter().map(|&b| b as char).collect::<String>());
 
                 let request = MagicRequest::new(&buf, n);
 
                 if let Ok(req) = &request {
                     let protoc_impl = req.protocol();
-                    let protocol = protoc_impl as &dyn Protocol;
-                    let data = protocol
-                        .make_resp(&format!("The request's been executed using {:?}", req))
-                        //.add_header("Content-Language: fr-FR")
-                        .build();
 
-                    println!("billable {}ms", req.time_elapsed());
-                    if let Err(e) = socket.write_all(&data).await {
-                        eprintln!("failed to write to socket; err = {:?}", e);
-                        return;
+                    if let Some(pool) = registry.get_worker_pool("simple_entrypoint_delayed") {
+                        let rslt = pool.invoke(JsonValue::Null);
+                        let rslt_value = rslt.await;
+
+                        let protocol = protoc_impl as &dyn Protocol;
+                        let data = protocol
+                            .make_resp(&format!("The request's executed using {:?}", rslt_value.payload))
+                            .build();
+
+                        if let Err(e) = socket.write_all(&data).await {
+                            eprintln!("failed to write to socket; err = {:?}", e);
+                            return;
+                        }
+                    } else {
+                        println!("no parallel worker for executing: simple_entrypoint_delayed");
                     }
+
+
+                    //println!("billable {}ms", req.time_elapsed());
                 }
             }
         });
