@@ -10,11 +10,12 @@ use std::str::FromStr;
 pub struct HttpProtocImpl {
     method: HttpMethod,
     version: Option<Version>,
+    path: String,
 }
 
 impl HttpProtocImpl {
-    pub fn new(method: HttpMethod, version: Option<Version>) -> Self {
-        Self { method, version }
+    pub fn new<S: Into<String>>(method: HttpMethod, version: Option<Version>, path: S) -> Self {
+        Self { method, version, path: path.into() }
     }
 
     pub fn method(&self) -> &HttpMethod {
@@ -26,35 +27,63 @@ impl HttpProtocImpl {
             Some(version)
         } else { None }
     }
+
+    pub fn path(&self) -> &str {
+        &self.path
+    }
 }
 
-fn parse_request_line(value: &str) -> Option<(HttpMethod, &str, &str, Version)> {
+fn parse_request_line(value: &str) -> Result<HttpProtocImpl, std::io::Error> {
     let mut parts = value.split_whitespace();
 
-    let method = parts.next()?;
-    let path = parts.next()?;
-    let version_part = parts.next()?;
+    let method = parts.next().ok_or(std::io::Error::new(
+        std::io::ErrorKind::InvalidInput,
+        "Missing method",
+    ))?;
 
-    // "HTTP/1.1" or "HTTP/2"
-    let (protocol_str, version_str) = version_part.split_once('/')?;
+    let path = parts.next().ok_or(std::io::Error::new(
+        std::io::ErrorKind::InvalidInput,
+        "Missing path",
+    ))?;
+
+    let version_part = parts.next().ok_or(std::io::Error::new(
+        std::io::ErrorKind::InvalidInput,
+        "Missing version",
+    ))?;
+
+    let (_, version_str) = version_part.split_once('/').ok_or(
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid version format"),
+    )?;
 
     let (major, minor) = match version_str.split_once('.') {
         Some((maj, min)) => (
-            maj.parse::<u8>().ok()?,
-            min.parse::<u8>().ok()?,
+            maj.parse::<u8>().map_err(|_| std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "Invalid major version",
+            ))?,
+            min.parse::<u8>().map_err(|_| std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "Invalid minor version",
+            ))?,
         ),
         None => (
-            version_str.parse::<u8>().ok()?,
+            version_str.parse::<u8>().map_err(|_| std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "Invalid version",
+            ))?,
             0,
         ),
     };
 
-    let method = match HttpMethod::from_str(method) {
-        Ok(method) => method,
-        Err(_) => return None,
-    };
+    let method = HttpMethod::from_str(method).map_err(|_| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid method")
+    })?;
 
-    Some((method, path, protocol_str, Version::new(major, minor)))
+    Ok(HttpProtocImpl::new(
+        method,
+        Some(Version::new(major, minor)),
+        path,
+    ))
 }
 
 impl TryFrom<&str> for HttpProtocImpl {
@@ -63,8 +92,8 @@ impl TryFrom<&str> for HttpProtocImpl {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value.contains("HTTP/") {
             // RFC 2145
-            if let Some((method, _path, _protocol, version)) = parse_request_line(value) {
-                return Ok(HttpProtocImpl::new(method, Some(version)));
+            if let Ok(http_impl) = parse_request_line(value) {
+                return Ok(http_impl);
             }
 
             anyhow::bail!("HTTP request line fails parsing")

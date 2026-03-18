@@ -2,6 +2,8 @@ use cactus_com::magic_request::MagicRequest;
 use cactus_com::magic_response_builder::MagicResponseBuilderExt;
 use cactus_com::protocol::Protocol;
 use cactus_com::protocol_enum::ProtocolImpl;
+use cactus_foundation::cactuize::Cactuize;
+use cactus_foundation::function::Function;
 use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
@@ -114,6 +116,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         });
     }*/
+
+
+    //let fnc = Function::new("test".to_string(), None, vec![]);
+    //let cactuized = Cactuize::new(fnc);
+    //println!("name={}", cactuized.name());
 
     let listener = TcpListener::bind("127.0.0.1:8080").await?;
 
