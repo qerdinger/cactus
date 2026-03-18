@@ -5,6 +5,7 @@ use pyo3::Python;
 use std::sync::{Arc, Mutex};
 use tokio::sync::{mpsc, oneshot};
 use tracing::{error, info};
+use cactus_foundation::cactuize::Cactuize;
 
 struct Job {
     args: serde_json::Value,
@@ -18,7 +19,7 @@ pub struct WorkerPool {
 impl WorkerPool {
     pub fn new(
         fragments: Vec<Fragment>,
-        function: String,
+        function_name: &str,
         size: usize,
     ) -> Self {
         let (tx, rx) = mpsc::channel::<Job>(128);
@@ -27,12 +28,12 @@ impl WorkerPool {
         for _ in 0..size {
             let rx = Arc::clone(&rx);
             let fragments = fragments.clone();
-            let function = function.clone();
+            let function_name = function_name.to_string();
 
             std::thread::spawn(move || {
                 let thread_id = std::thread::current().id();
-                let worker = Python::with_gil(|py| PythonWorker::new(py, &fragments, &function));
-                info!("Worker initialized for {} on {:?}", function, thread_id);
+                let worker = Python::with_gil(|py| PythonWorker::new(py, &fragments, &function_name));
+                info!("Worker initialized for {} on {:?}", function_name, thread_id);
 
                 loop {
                     let job = {
@@ -41,9 +42,9 @@ impl WorkerPool {
                     };
 
                     let Some(job) = job else { break };
-                    info!("Worker start {} on thread {:?}", function, thread_id);
+                    info!("Worker start {} on thread {:?}", function_name, thread_id);
                     let res = Python::with_gil(|py| worker.invoke(py, job.args));
-                    info!("Worker end {} on thread {:?}", function, thread_id);
+                    info!("Worker end {} on thread {:?}", function_name, thread_id);
                     let _ = job.resp.send(res);
                 }
             });
