@@ -25,4 +25,8 @@ impl Protocol for WSProtocolImpl {
     fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
         todo!()
     }
+
+    fn path(&self) -> &str {
+        todo!()
+    }
 }

@@ -160,8 +160,10 @@ async fn main() -> Result<(), anyhow::Error> {
         //};
 
         tokio::spawn(async move {
-            handle_conn(client, &registry).await.unwrap();
-            permit.forget();
+            if let Err(e) = handle_conn(client, &registry).await {
+                eprintln!("connection handler error: {:?}", e);
+            }
+            drop(permit);
         });
     }
 }

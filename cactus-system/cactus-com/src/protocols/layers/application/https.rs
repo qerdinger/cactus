@@ -37,4 +37,8 @@ impl Protocol for HttpsProtocImpl {
     fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
         todo!()
     }
+
+    fn path(&self) -> &str {
+        todo!()
+    }
 }

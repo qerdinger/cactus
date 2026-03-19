@@ -126,6 +126,10 @@ impl Protocol for HttpProtocImpl {
     fn protocol(&self) -> ProtocolType {
         ProtocolType::Http
     }
+    
+    fn path(&self) -> &str {
+        self.path()
+    }
 
     /*fn make_resp(&self, body: &str) -> Vec<u8> {
         format!("HTTP/1.1 200 OK

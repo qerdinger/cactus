@@ -23,13 +23,15 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
         if let Ok(req) = &request {
             let protoc_impl = req.protocol();
 
-            if let Some(pool) = registry.get_worker_pool("simple_entrypoint_delayed") {
+            let path_requested = (protoc_impl as &dyn Protocol).path();
+
+            if let Some(pool) = registry.get_worker_pool(&path_requested[1..]) {
                 let rslt = pool.invoke(JsonValue::Null);
                 let rslt_value = rslt.await;
-
                 let protocol = protoc_impl as &dyn Protocol;
+
                 let data = protocol
-                    .make_resp(&format!("The request's executed using {:?}", rslt_value.payload))
+                    .make_resp(&format!("{:?}\n*** Execution: ***\n{:?}", req, rslt_value.payload))
                     .build();
 
                 if let Err(e) = client.write_all(&data).await {
@@ -38,6 +40,14 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
                 }
             } else {
                 println!("no parallel worker for executing: simple_entrypoint_delayed");
+                let protocol = protoc_impl as &dyn Protocol;
+                let data = protocol
+                    .make_resp(&format!("Lambda/function {} not found!", &path_requested[1..]))
+                    .build();
+                if let Err(e) = client.write_all(&data).await {
+                    eprintln!("failed to write to socket; err = {:?}", e);
+                    anyhow::bail!("failed to write to socket; err = {:?}", e);
+                }
             }
         }
     }
