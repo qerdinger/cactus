@@ -7,8 +7,10 @@ use anyhow::anyhow;
 use cactus_foundation::std::version::Version;
 use std::collections::HashMap;
 use std::str::FromStr;
+use log::{error, info};
 use url::Url;
 use crate::protocols::layers::application::http_authorization::HttpAuthorization;
+use crate::protocols::layers::application::http_encoding::HttpEncoding;
 use crate::protocols::layers::application::user_agent::UserAgent;
 
 const INTERNAL_URL: &str = "http://cactus-sys.runtime.internal";
@@ -21,7 +23,8 @@ pub struct HttpProtocImpl {
     query_strings: HashMap<String, String>,
 
     auth: Option<HttpAuthorization>,
-    user_agent: Option<UserAgent>
+    user_agent: Option<UserAgent>,
+    encoding: Option<HttpEncoding>,
 }
 
 impl HttpProtocImpl {
@@ -44,6 +47,7 @@ impl HttpProtocImpl {
 
                 auth: None,
                 user_agent: None,
+                encoding: None,
             }
         )
     }
@@ -69,18 +73,34 @@ impl HttpProtocImpl {
     pub fn auth(&self) -> Option<&HttpAuthorization> {
         self.auth.as_ref()
     }
+
+    pub fn user_agent(&self) -> Option<&UserAgent> {
+        self.user_agent.as_ref()
+    }
+
+    pub fn encoding(&self) -> Option<&HttpEncoding> {
+        self.encoding.as_ref()
+    }
 }
 
 fn parse_authentification_attribute(value: &str, http_impl: &mut HttpProtocImpl) {
     http_impl.auth = HttpAuthorization::new(value);
-    println!("Authenticated with {:?}", http_impl.auth);
 }
 
 fn parse_user_agent_attribute(value: &str, http_impl: &mut HttpProtocImpl) {
     if let Ok(agent) = UserAgent::from_request(value) {
         http_impl.user_agent = Some(agent);
+    } else {
+        error!("Could not parse user agent from request: {}", value);
     }
-    println!("User agent with {:?}", http_impl.user_agent);
+}
+
+fn parse_encoding_attribute(value: &str, http_impl: &mut HttpProtocImpl) {
+    if let Ok(encoding) = HttpEncoding::try_from(value) {
+        http_impl.encoding = Some(encoding);
+    } else {
+        error!("Could not parse encoding from request: {}", value);
+    }
 }
 
 fn parse_request_line(value: &str) -> Result<HttpProtocImpl, anyhow::Error> {
@@ -135,6 +155,7 @@ impl TryFrom<&str> for HttpProtocImpl {
                 match arg.split_once(":") {
                     Some(("Authorization", val)) => parse_authentification_attribute(val, &mut http_impl),
                     Some(("User-Agent", val)) => parse_user_agent_attribute(val, &mut http_impl),
+                    Some(("Accept-Encoding", val)) => parse_encoding_attribute(val, &mut http_impl),
                     _ => {}
                 }
             }
