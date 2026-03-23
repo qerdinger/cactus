@@ -7,6 +7,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use tracing::info;
 
 pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &Arc<Registry>) -> Result<(), anyhow::Error> {
     let mut buffer = [0u8; 4096];
@@ -18,7 +19,7 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
             return Ok(());
         }
 
-        println!("{}", String::from_utf8_lossy(&buffer[..n]));
+        info!("{}", String::from_utf8_lossy(&buffer[..n]));
 
         let request = MagicRequest::new(&buffer, n);
 
@@ -26,8 +27,9 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
             let protoc_impl = req.protocol();
 
             let path_requested = (protoc_impl as &dyn Protocol).path();
+            let path = path_requested.strip_prefix("/").unwrap_or(path_requested).to_str().unwrap();
 
-            if let Some(pool) = registry.get_worker_pool(&path_requested[1..]) {
+            if let Some(pool) = registry.get_worker_pool(path) {
                 let rslt = pool.invoke(JsonValue::Null);
                 let rslt_value = rslt.await;
                 let protocol = protoc_impl as &dyn Protocol;
@@ -42,7 +44,7 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
             } else {
                 let protocol = protoc_impl as &dyn Protocol;
                 let data = protocol
-                    .make_resp(&format!("Lambda/function [requested={}], not found in registry!", &path_requested[1..]))
+                    .make_resp(&format!("Lambda/function [requested={}], not found in registry!", path))
                     .build();
                 if let Err(e) = client.write_all(&data).await {
                     anyhow::bail!("failed to write to socket; err = {:?}", e);

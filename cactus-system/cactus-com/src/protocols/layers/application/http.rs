@@ -1,17 +1,18 @@
 use crate::magic_response_builder::{MagicResponseBuilder, MagicResponseBuilderExt};
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
+use crate::protocols::layers::application::http_authorization::HttpAuthorization;
+use crate::protocols::layers::application::http_encoding::HttpEncoding;
 use crate::protocols::layers::application::http_magic_resp_builder::HTTPMagicResponseBuilder;
 use crate::protocols::layers::application::http_method::HttpMethod;
+use crate::protocols::layers::application::user_agent::UserAgent;
 use anyhow::anyhow;
 use cactus_foundation::std::version::Version;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::str::FromStr;
-use log::{error, info};
+use tracing::{error, info};
 use url::Url;
-use crate::protocols::layers::application::http_authorization::HttpAuthorization;
-use crate::protocols::layers::application::http_encoding::HttpEncoding;
-use crate::protocols::layers::application::user_agent::UserAgent;
 
 const INTERNAL_URL: &str = "http://cactus-sys.runtime.internal";
 
@@ -19,7 +20,7 @@ const INTERNAL_URL: &str = "http://cactus-sys.runtime.internal";
 pub struct HttpProtocImpl {
     method: HttpMethod,
     version: Option<Version>,
-    path: String,
+    path: PathBuf,
     query_strings: HashMap<String, String>,
 
     auth: Option<HttpAuthorization>,
@@ -37,7 +38,7 @@ impl HttpProtocImpl {
             Self {
                 method,
                 version,
-                path: data_url.path().to_string(),
+                path: PathBuf::from_str(data_url.path()).map_err(|e| anyhow!(e))?,
                 query_strings: data_url
                     .query_pairs()
                     .map(|(k, v)|
@@ -62,7 +63,7 @@ impl HttpProtocImpl {
         } else { None }
     }
 
-    pub fn path(&self) -> &str {
+    pub fn path(&self) -> &PathBuf {
         &self.path
     }
 
@@ -180,7 +181,7 @@ impl Protocol for HttpProtocImpl {
         ProtocolType::Http
     }
 
-    fn path(&self) -> &str {
+    fn path(&self) -> &PathBuf {
         self.path()
     }
 
