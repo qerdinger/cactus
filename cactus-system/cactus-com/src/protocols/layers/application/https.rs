@@ -20,7 +20,7 @@ impl TryFrom<&str> for HttpsProtocImpl {
             let version = re.captures(value).and_then(|caps| {
                 let major = caps.get(1)?.as_str().parse::<u8>().ok()?;
                 let minor = caps.get(2)?.as_str().parse::<u8>().ok()?;
-                Some(Version::new(major, minor))
+                Some(Version::new(major, minor, None))
             });
 
             Ok(HttpsProtocImpl { version })
