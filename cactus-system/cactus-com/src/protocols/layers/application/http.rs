@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use url::Url;
 use crate::protocols::layers::application::http_authorization::HttpAuthorization;
+use crate::protocols::layers::application::user_agent::UserAgent;
 
 const INTERNAL_URL: &str = "http://cactus-sys.runtime.internal";
 
@@ -20,6 +21,7 @@ pub struct HttpProtocImpl {
     query_strings: HashMap<String, String>,
 
     auth: Option<HttpAuthorization>,
+    user_agent: Option<UserAgent>
 }
 
 impl HttpProtocImpl {
@@ -41,6 +43,7 @@ impl HttpProtocImpl {
                     .collect(),
 
                 auth: None,
+                user_agent: None,
             }
         )
     }
@@ -69,9 +72,15 @@ impl HttpProtocImpl {
 }
 
 fn parse_authentification_attribute(value: &str, http_impl: &mut HttpProtocImpl) {
-    println!("Authentification found : {value}");
     http_impl.auth = HttpAuthorization::new(value);
     println!("Authenticated with {:?}", http_impl.auth);
+}
+
+fn parse_user_agent_attribute(value: &str, http_impl: &mut HttpProtocImpl) {
+    if let Ok(agent) = UserAgent::from_request(value) {
+        http_impl.user_agent = Some(agent);
+    }
+    println!("User agent with {:?}", http_impl.user_agent);
 }
 
 fn parse_request_line(value: &str) -> Result<HttpProtocImpl, anyhow::Error> {
@@ -111,7 +120,7 @@ fn parse_request_line(value: &str) -> Result<HttpProtocImpl, anyhow::Error> {
 
     Ok(HttpProtocImpl::new(
         method,
-        Some(Version::new(major, minor)),
+        Some(Version::new(major, minor, None)),
         path,
     )?)
 }
@@ -125,6 +134,7 @@ impl TryFrom<&str> for HttpProtocImpl {
             for arg in value.lines() {
                 match arg.split_once(":") {
                     Some(("Authorization", val)) => parse_authentification_attribute(val, &mut http_impl),
+                    Some(("User-Agent", val)) => parse_user_agent_attribute(val, &mut http_impl),
                     _ => {}
                 }
             }
