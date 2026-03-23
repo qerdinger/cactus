@@ -8,6 +8,7 @@ use cactus_foundation::std::version::Version;
 use std::collections::HashMap;
 use std::str::FromStr;
 use url::Url;
+use crate::protocols::layers::application::http_authorization::HttpAuthorization;
 
 const INTERNAL_URL: &str = "http://cactus-sys.runtime.internal";
 
@@ -17,6 +18,8 @@ pub struct HttpProtocImpl {
     version: Option<Version>,
     path: String,
     query_strings: HashMap<String, String>,
+
+    auth: Option<HttpAuthorization>,
 }
 
 impl HttpProtocImpl {
@@ -36,6 +39,8 @@ impl HttpProtocImpl {
                         (k.to_string(), v.to_string())
                     )
                     .collect(),
+
+                auth: None,
             }
         )
     }
@@ -57,6 +62,16 @@ impl HttpProtocImpl {
     pub fn query_strings(&self) -> &HashMap<String, String> {
         &self.query_strings
     }
+
+    pub fn auth(&self) -> Option<&HttpAuthorization> {
+        self.auth.as_ref()
+    }
+}
+
+fn parse_authentification_attribute(value: &str, http_impl: &mut HttpProtocImpl) {
+    println!("Authentification found : {value}");
+    http_impl.auth = HttpAuthorization::new(value);
+    println!("Authenticated with {:?}", http_impl.auth);
 }
 
 fn parse_request_line(value: &str) -> Result<HttpProtocImpl, anyhow::Error> {
@@ -106,7 +121,14 @@ impl TryFrom<&str> for HttpProtocImpl {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value.contains("HTTP/") {
-            parse_request_line(value) // RFC 2145
+            let mut http_impl = parse_request_line(value)?; // RFC 2145
+            for arg in value.lines() {
+                match arg.split_once(":") {
+                    Some(("Authorization", val)) => parse_authentification_attribute(val, &mut http_impl),
+                    _ => {}
+                }
+            }
+            Ok(http_impl)
         } else {
             anyhow::bail!("not http")
         }
@@ -126,9 +148,13 @@ impl Protocol for HttpProtocImpl {
     fn protocol(&self) -> ProtocolType {
         ProtocolType::Http
     }
-    
+
     fn path(&self) -> &str {
         self.path()
+    }
+
+    fn query_strings(&self) -> &HashMap<String, String> {
+        &self.query_strings
     }
 
     /*fn make_resp(&self, body: &str) -> Vec<u8> {

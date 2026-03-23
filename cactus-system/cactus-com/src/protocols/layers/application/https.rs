@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::magic_response_builder::MagicResponseBuilder;
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
@@ -39,6 +40,10 @@ impl Protocol for HttpsProtocImpl {
     }
 
     fn path(&self) -> &str {
+        todo!()
+    }
+    
+    fn query_strings(&self) -> &HashMap<String, String> {
         todo!()
     }
 }
