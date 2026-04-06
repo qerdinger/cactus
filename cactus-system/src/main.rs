@@ -75,7 +75,7 @@ async fn main() -> Result<(), anyhow::Error> {
             };
 
             match is_entrypoint {
-                true => registry.register_to_thread_pool(fragments.clone(), Cactuize::new(fnc)),
+                true => registry.register_to_parallel_pool(fragments.clone(), Cactuize::new(fnc)),
                 _ => registry.register_unregistered(fnc),
             }
         } else {
