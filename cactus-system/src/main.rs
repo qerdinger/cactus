@@ -8,7 +8,6 @@ use cactus_ingest::discover::Discover;
 use cactus_interpreter::interpreter_engine::InterpreterEngine;
 use cactus_interpreter::langs::python_interpreter::PythonInterpreter;
 use cactus_lang::fragment_extractor::FragmentExtractor;
-use log::error;
 use serde_json::Value as JsonValue;
 use socket2::{Domain, Protocol as SocketProtocol, Socket, Type};
 use std::env;
@@ -16,7 +15,8 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-use tracing::{info, Level};
+use tracing::error;
+use tracing::{info, warn, Level};
 use tracing_subscriber::FmtSubscriber;
 
 mod handler;
@@ -33,7 +33,7 @@ fn tracing_subscriber_handler(max_level: Level) {
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     let _args: Vec<String> = env::args().collect();
-    tracing_subscriber_handler(Level::INFO);
+    tracing_subscriber_handler(Level::DEBUG);
     info!("Cactus Runtime System");
 
     let disc = Discover();
@@ -75,7 +75,7 @@ async fn main() -> Result<(), anyhow::Error> {
             };
 
             match is_entrypoint {
-                true => registry.register_to_thread_pool(fragments.clone(), Cactuize::new(fnc)),
+                true => registry.register_to_parallel_pool(fragments.clone(), Cactuize::new(fnc)),
                 _ => registry.register_unregistered(fnc),
             }
         } else {
@@ -148,7 +148,7 @@ async fn main() -> Result<(), anyhow::Error> {
         let client = match listener.accept().await {
             Ok((conn, sock_addr)) => Client::new(conn, sock_addr),
             Err(e) => {
-                eprintln!("failed to accept connection; err = {:?}", e);
+                warn!("failed to accept connection; err = {:?}", e);
                 drop(permit);
                 continue;
             }
@@ -161,7 +161,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
         tokio::spawn(async move {
             if let Err(e) = handle_conn(client, &registry).await {
-                eprintln!("connection handler error: {:?}", e);
+                error!("connection handler error: {:?}", e);
             }
             drop(permit);
         });

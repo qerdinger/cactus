@@ -33,7 +33,7 @@ impl FromStr for Version {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.split('.').collect();
-        
+
         if let [major, minor, patch] = parts.as_slice() {
             Ok(Self::new(major.parse()?, minor.parse()?, Some(patch.parse()?)))
         } else if let [major, minor] = parts.as_slice() {
@@ -42,5 +42,4 @@ impl FromStr for Version {
             anyhow::bail!("Cannot parse version string")
         }
     }
-
 }

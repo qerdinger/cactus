@@ -1,8 +1,9 @@
-use std::collections::HashMap;
 use crate::magic_response_builder::MagicResponseBuilder;
 #[allow(unused_imports)]
 use crate::protocol_enum::{ProtocolImpl, ProtocolType};
 use enum_dispatch::enum_dispatch;
+use std::collections::HashMap;
+use std::path::PathBuf;
 
 /*
 Protocol implementation
@@ -22,6 +23,6 @@ use crate::protocols::layers::application::ws::WSProtocolImpl;
 pub trait Protocol {
     fn protocol(&self) -> ProtocolType;
     fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder>;
-    fn path(&self) -> &str;
+    fn path(&self) -> &PathBuf;
     fn query_strings(&self) -> &HashMap<String, String>;
 }

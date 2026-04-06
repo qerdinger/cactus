@@ -4,8 +4,7 @@ use serde_json::json;
 use serde_json::Value as JsonValue;
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, Command, Stdio};
-use std::sync::Arc;
-use tokio::sync::{mpsc, oneshot, Mutex};
+use tokio::sync::oneshot;
 use tracing::{error, info};
 
 struct WorkerProcess {
@@ -20,7 +19,7 @@ struct Job {
 }
 
 pub struct ParallelWorker {
-    tx: mpsc::Sender<Job>,
+    tx: crossbeam_channel::Sender<Job>,
 }
 
 impl ParallelWorker {
@@ -29,8 +28,9 @@ impl ParallelWorker {
         function: String,
         num_workers: usize,
     ) -> Self {
-        let (tx, rx) = mpsc::channel::<Job>(128);
-        let rx = Arc::new(Mutex::new(rx));
+        let (tx, rx) = crossbeam_channel::bounded::<Job>(128);
+        
+        info!("Creating {} parallel workers for function: {}", num_workers, function);
 
         let fragments_code = fragments
             .iter()
@@ -39,7 +39,7 @@ impl ParallelWorker {
             .join("");
 
         for worker_id in 0..num_workers {
-            let rx = Arc::clone(&rx);
+            let rx = rx.clone();
             let m_fragments_code = fragments_code.clone();
             let m_function = function.clone();
 
@@ -84,7 +84,7 @@ while True:
 
                 let cactuskit_path = cactuskit_dir.to_str().expect("utf-8 path").to_string();
 
-                let mut child = Command::new("python3")
+                let mut child = match Command::new("python3")
                     .env("PYTHONPATH", cactuskit_path)
                     .arg("-c")
                     .arg(worker_code)
@@ -92,30 +92,31 @@ while True:
                     .stdout(Stdio::piped())
                     .stderr(Stdio::piped())
                     .spawn()
-                    .expect("failed to spawn worker process");
+                {
+                    Ok(c) => {
+                        info!("ParallelWorker {} spawned successfully", worker_id);
+                        c
+                    }
+                    Err(e) => {
+                        error!("ParallelWorker {} failed to spawn Python process: {}", worker_id, e);
+                        return;
+                    }
+                };
 
                 let mut stdin = child.stdin.take().expect("piped stdin");
                 let mut stdout = BufReader::new(child.stdout.take().expect("piped stdout"));
 
                 info!("ParallelWorker {} initialized (pid: {:?})", worker_id, child.id());
 
-                let mut line_buffer = String::new();
-
-                loop {
-                    let job = {
-                        let mut guard = rx.blocking_lock();
-                        guard.blocking_recv()
-                    };
-
-                    let Some(job) = job else { break };
-
+                for job in rx {
+                    info!("ParallelWorker {} START processing job", worker_id);
                     let request = json!({ "args": job.args });
                     if writeln!(stdin, "{}", request.to_string()).is_err() {
                         break;
                     }
                     stdin.flush().unwrap();
 
-                    line_buffer.clear();
+                    let mut line_buffer = String::new();
                     if stdout.read_line(&mut line_buffer).is_err() {
                         break;
                     }
@@ -130,17 +131,22 @@ while True:
                             }).as_object().unwrap().clone())
                         }).into();
 
+                    info!("ParallelWorker {} END processing job", worker_id);
                     let _ = job.resp.send(response);
                 }
+
+                info!("ParallelWorker {} shut down", worker_id);
             });
         }
+        
+        info!("Successfully spawned {} parallel workers for function: {}", num_workers, function);
 
         Self { tx }
     }
 
     pub async fn invoke(&self, args: JsonValue) -> CactusResponse {
         let (tx, rx) = oneshot::channel();
-        self.tx.send(Job { args, resp: tx }).await.unwrap();
+        self.tx.send(Job { args, resp: tx }).ok();
         rx.await.unwrap()
     }
 }

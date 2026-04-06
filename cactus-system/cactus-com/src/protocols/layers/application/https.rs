@@ -1,9 +1,10 @@
-use std::collections::HashMap;
 use crate::magic_response_builder::MagicResponseBuilder;
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
 use cactus_foundation::std::version::Version;
 use regex::Regex;
+use std::collections::HashMap;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct HttpsProtocImpl {
@@ -39,10 +40,10 @@ impl Protocol for HttpsProtocImpl {
         todo!()
     }
 
-    fn path(&self) -> &str {
+    fn path(&self) -> &PathBuf {
         todo!()
     }
-    
+
     fn query_strings(&self) -> &HashMap<String, String> {
         todo!()
     }

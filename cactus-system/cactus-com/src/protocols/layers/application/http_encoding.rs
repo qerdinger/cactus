@@ -24,7 +24,7 @@ impl TryFrom<&str> for HttpEncoding {
             .collect::<HashSet<&str>>();
 
         if encodings.contains("br") {
-            return Ok(Self::Br)
+            return Ok(Self::Br);
         } else if encodings.contains("zstd") {
             return Ok(Self::Zstd)
         } else if encodings.contains("gzip") {

@@ -58,6 +58,7 @@ dependencies = [
  "strum",
  "strum_macros 0.28.0",
  "tokio",
+ "tracing",
  "url",
  "uuid",
 ]

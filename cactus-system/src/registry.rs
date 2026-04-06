@@ -37,7 +37,7 @@ impl Registry {
     pub fn register_to_parallel_pool(&mut self, fragments: Vec<Fragment>, function: Cactuize) {
         self.parallel_ledger.insert(
             function.name().to_string(),
-            Arc::new(ParallelWorker::new(fragments, function.name().to_string(), 4)),
+            Arc::new(ParallelWorker::new(fragments, function.name().to_string(), 8)),
         );
         info!("{} registered new registration (parallel pool)", function.name());
 

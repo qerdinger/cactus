@@ -52,7 +52,7 @@ async def main():
     async with aiohttp.ClientSession() as session:
         tasks = [worker(sem, session, i) for i in range(1, TOTAL + 1)]
         await asyncio.gather(reporter(), *tasks)
-    
+
     print("ended!")
 
 

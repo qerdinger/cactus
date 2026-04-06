@@ -1,7 +1,8 @@
-use std::collections::HashMap;
 use crate::magic_response_builder::MagicResponseBuilder;
 use crate::protocol::Protocol;
 use crate::protocol_enum::ProtocolType;
+use std::collections::HashMap;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct WSProtocolImpl;
@@ -27,7 +28,7 @@ impl Protocol for WSProtocolImpl {
         todo!()
     }
 
-    fn path(&self) -> &str {
+    fn path(&self) -> &PathBuf {
         todo!()
     }
 

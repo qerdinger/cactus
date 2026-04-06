@@ -36,6 +36,17 @@ def simple_entrypoint_delayed():
     GLOBAL_I += 1
     return f"""Hello World\nTime:{time.time()}\nTIMEOUT:{TIMEOUT}\nSEED:{SEED}\nGlobalI : {GLOBAL_I}.{len(DB)}\nfrom pid : {os.getpid()}--{threading.get_ident()}"""
 
+@cactuize()
+def bear_with_me():
+    import random
+    starting_time = time.ctime()
+    timeout = 20 #random.randrange(1, 10)
+    
+    time.sleep(timeout)
+    
+    return f"Operation began at {str(starting_time)}; Thank you for having waited {timeout} second(s)!"
+
+
 @cactuize(
     auth=authenticate,
     protocol=ApiProtocol.HTTP,
