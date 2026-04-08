@@ -10,7 +10,7 @@ pub enum HttpStatus {
     Forbidden(String),
     NotFound(String),
 
-    InternalServerError,
+    InternalServerError(Option<String>),
 
     Custom((u16, String)),
 }
@@ -35,11 +35,36 @@ impl HttpStatus {
 
             HttpStatus::NotFound(_) => (404, sf!("Not Found")),
 
-            HttpStatus::InternalServerError => (405, sf!("Internal Server Error")),
+            HttpStatus::InternalServerError(_) => (500, sf!("Internal Server Error")),
 
             HttpStatus::Custom(x) => (x.0, x.1.clone()),
 
-            _ => HttpStatus::convert_status_to_u16_and_string(&HttpStatus::InternalServerError),
+            _ => HttpStatus::convert_status_to_u16_and_string(&HttpStatus::InternalServerError(None)),
         }
+    }
+    
+    pub fn convert_u16_to_status(http_status: u16) -> HttpStatus {
+        match http_status {
+            200 => HttpStatus::Ok,
+            201 => HttpStatus::Created,
+            202 => HttpStatus::Accepted,
+            204 => HttpStatus::NoContent,
+            
+            400 => HttpStatus::BadRequest,
+            401 => HttpStatus::Unauthorized(sf!("Bad Request")),
+            403 => HttpStatus::Forbidden(sf!("Forbidden")),
+            
+            404 => HttpStatus::NotFound(sf!("Not Found")),
+            
+            500 => HttpStatus::InternalServerError(None),
+            
+            _ => HttpStatus::InternalServerError(Some(sf!("Http Status code not implemented"))),
+        }
+    }
+}
+
+impl Into<HttpStatus> for u16 {
+    fn into(self) -> HttpStatus {
+        HttpStatus::convert_u16_to_status(self)
     }
 }

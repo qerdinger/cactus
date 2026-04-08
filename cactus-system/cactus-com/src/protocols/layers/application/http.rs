@@ -13,6 +13,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use tracing::{error, info};
 use url::Url;
+use crate::protocols::layers::application::http_status::HttpStatus;
 
 const INTERNAL_URL: &str = "http://cactus-sys.runtime.internal";
 
@@ -197,10 +198,11 @@ Content-type: text/plain; charset=UTF-8
 {}", body.len(), body).into_bytes()
     }*/
 
-    fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
+    fn make_resp(&self, body: &str, status_code: u16) -> Box<dyn MagicResponseBuilder> {
         let mut builder = HTTPMagicResponseBuilder::new(body);
 
-        header_formatting!(builder, "1.1", 200, "OK", body);
+        let status_code = HttpStatus::convert_status_to_u16_and_string(&status_code.into());
+        header_formatting!(builder, "1.1", status_code.0, status_code.1, body);
         Box::new(builder)
     }
 }

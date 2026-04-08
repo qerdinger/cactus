@@ -8,6 +8,7 @@ use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tracing::info;
+use cactus_com::protocols::layers::application::http_status::HttpStatus;
 
 pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &Arc<Registry>) -> Result<(), anyhow::Error> {
     let mut buffer = [0u8; 4096];
@@ -35,8 +36,10 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
             info!("Function completed: {}", path);
 
             let protocol = protoc_impl as &dyn Protocol;
+            info!("Finished with {:?}", rslt_value);
             let data = protocol
-                .make_resp(&format!("{:?}\n*** Execution: ***\n{:?}\n*** Time elapsed : {}ms ***", req, rslt_value.payload, req.time_elapsed()))
+                .make_resp(&format!("{:?}\n*** Execution: ***\n{:?}\n*** Time elapsed : {}ms ***", req, rslt_value.payload, req.time_elapsed()), rslt_value.status)
+                .set_status(rslt_value.status.into())
                 .build();
 
             if let Err(e) = client.write_all(&data).await {
@@ -45,7 +48,7 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
         } else {
             let protocol = protoc_impl as &dyn Protocol;
             let data = protocol
-                .make_resp(&format!("Lambda/function [requested={}], not found in registry!", path))
+                .make_resp(&format!("Lambda/function [requested={}], not found in registry!", path), 200)
                 .build();
             if let Err(e) = client.write_all(&data).await {
                 anyhow::bail!("failed to write to socket; err = {:?}", e);

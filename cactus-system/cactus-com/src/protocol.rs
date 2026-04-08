@@ -22,7 +22,7 @@ use crate::protocols::layers::application::ws::WSProtocolImpl;
 #[enum_dispatch]
 pub trait Protocol {
     fn protocol(&self) -> ProtocolType;
-    fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder>;
+    fn make_resp(&self, body: &str, status_code: u16) -> Box<dyn MagicResponseBuilder>;
     fn path(&self) -> &PathBuf;
     fn query_strings(&self) -> &HashMap<String, String>;
 }
