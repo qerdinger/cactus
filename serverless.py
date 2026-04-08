@@ -56,6 +56,18 @@ def entrypoint(name):
         "content": f"Hello {name}"
     })
 
+@cactuize(
+    auth=authenticate,
+    protocol=ApiProtocol.HTTP,
+    method=ApiMethod.GET,
+    args_mtable={
+        "name": "str"
+    })
+def entrypoint1(name):
+    return (HttpStatus.HTTP_CUSTOM(201), {
+        "content": f"Hello {name}"
+    })
+
 @cactuize()
 def en_lang():
     print("English")
@@ -88,4 +100,3 @@ def access_denied():
 #print(rslt)
 #print(rslt.get_payload())
 #print(rslt.get_status_code())
-

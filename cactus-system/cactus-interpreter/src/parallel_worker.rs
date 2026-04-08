@@ -2,6 +2,7 @@ use crate::cactus_resp::CactusResponse;
 use cactus_foundation::fragment::Fragment;
 use serde_json::json;
 use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, Command, Stdio};
 use tokio::sync::oneshot;
@@ -14,7 +15,7 @@ struct WorkerProcess {
 }
 
 struct Job {
-    args: JsonValue,
+    args: HashMap<String, String>,
     resp: oneshot::Sender<CactusResponse>,
 }
 
@@ -59,7 +60,15 @@ while True:
         break
     request = json.loads(line)
     try:
-        result = func()
+        call_args = request.get("args")
+        if isinstance(call_args, dict):
+            result = func(**call_args)
+        elif isinstance(call_args, list):
+            result = func(*call_args)
+        elif call_args is None:
+            result = func()
+        else:
+            result = func(call_args)
         print(json.dumps(result, cls=CactusEncoder))
         sys.stdout.flush()
     except Exception as e:
@@ -144,7 +153,7 @@ while True:
         Self { tx }
     }
 
-    pub async fn invoke(&self, args: JsonValue) -> CactusResponse {
+    pub async fn invoke(&self, args: HashMap<String, String>) -> CactusResponse {
         let (tx, rx) = oneshot::channel();
         self.tx.send(Job { args, resp: tx }).ok();
         rx.await.unwrap()

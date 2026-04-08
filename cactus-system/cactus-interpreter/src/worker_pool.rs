@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::cactus_resp::CactusResponse;
 use crate::langs::python_worker::PythonWorker;
 use cactus_foundation::cactuize::Cactuize;
@@ -8,7 +9,7 @@ use tokio::sync::oneshot;
 use tracing::{error, info};
 
 struct Job {
-    args: serde_json::Value,
+    args: HashMap<String, String>,
     resp: oneshot::Sender<CactusResponse>,
 }
 
@@ -36,7 +37,7 @@ impl WorkerPool {
 
                 for job in rx {
                     info!("Worker start {} on thread {:?}", function_name, thread_id);
-                    let res = Python::with_gil(|py| worker.invoke(py, job.args));
+                    let res = Python::with_gil(|py| worker.invoke(py, serde_json::Value::Null));
                     info!("Worker end {} on thread {:?}", function_name, thread_id);
                     let _ = job.resp.send(res);
                 }
@@ -48,7 +49,7 @@ impl WorkerPool {
         Self { tx }
     }
 
-    pub async fn invoke(&self, args: serde_json::Value) -> CactusResponse {
+    pub async fn invoke(&self, args: HashMap<String, String>) -> CactusResponse {
         let (tx, rx) = oneshot::channel();
         self.tx.send(Job { args, resp: tx }).ok();
 

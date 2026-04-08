@@ -9,23 +9,18 @@ As a matter of fact, the "cactuize" decorator name comes from an inspiration of 
 
 from enum import Enum, IntEnum
 from functools import wraps
+import inspect
 import time as tm
 import sys
 import json
 from typing import Union, Dict
 
-# ---------------------------------------------------------------------
-# Constants & Types
-# ---------------------------------------------------------------------
-
+# Constants
 DELIMITER = ";"
 SIZE_TYPE = int
 PAYLOAD_TYPE = Union[Dict, str]
 
-# ---------------------------------------------------------------------
 # HTTP Status
-# ---------------------------------------------------------------------
-
 class HttpStatus(IntEnum):
     HTTP_OK = 200
     HTTP_NOT_FOUND = 404
@@ -41,10 +36,7 @@ class HttpStatus(IntEnum):
         obj._value_ = value
         return obj
 
-# ---------------------------------------------------------------------
 # API Protocol & Method
-# ---------------------------------------------------------------------
-
 class ApiProtocol(Enum):
     HTTP = 0
     WS = 1
@@ -53,10 +45,7 @@ class ApiMethod(Enum):
     GET = 0
     POST = 1
 
-# ---------------------------------------------------------------------
 # Response Object
-# ---------------------------------------------------------------------
-
 class CactusResponse:
     def __init__(self, payload: PAYLOAD_TYPE, status_code: HttpStatus):
         self._payload = payload
@@ -99,10 +88,7 @@ class CactusEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-# ---------------------------------------------------------------------
 # Helpers
-# ---------------------------------------------------------------------
-
 def auth_required(auth_mthd) -> bool:
     """
     Returns True if authentication is required and failed.
@@ -115,29 +101,57 @@ def make_res(payload: PAYLOAD_TYPE,
              status_code: HttpStatus = HttpStatus.HTTP_OK) -> CactusResponse:
     return CactusResponse(payload, status_code)
 
-# ---------------------------------------------------------------------
-# Web Handler Decorator
-# ---------------------------------------------------------------------
-
+# Function decorator (known as cactuize)
 def cactuize(
-    protocol: ApiProtocol = ApiProtocol.HTTP,
-    method: ApiMethod = ApiMethod.GET,
+    protocol=ApiProtocol.HTTP,
+    method=ApiMethod.GET,
     auth=None,
-    middleware=None
-):
+    middleware=None,
+    args_mtable=None):
     """
     Declares a function as a Cactus entrypoint.
     Metadata is attached to the exported callable (wrapper).
     """
-
     def decorator(func):
+        sig = inspect.signature(func)
+        has_var_keyword = any(
+            param.kind == inspect.Parameter.VAR_KEYWORD
+            for param in sig.parameters.values()
+        )
 
         @wraps(func)
         def wrapper(*args, **kwargs):
             if auth_required(auth):
                 return "Authentication required"
 
-            result = func(*args, **kwargs)
+            # args_mtable: arguments mapping table, two behaviours : 
+            # None: Meaning automatic mapper and  
+            if args_mtable is None:
+                if has_var_keyword:
+                    kwargs = kwargs
+                else:
+                    kwargs = {
+                        key: value
+                        for key, value in kwargs.items()
+                        if key in sig.parameters
+                    }
+            else:
+                kwargs = kwargs
+
+            try:
+                bound = sig.bind(*args, **kwargs)
+                bound.apply_defaults()
+            except TypeError as e:
+                return make_res({
+                    "error": f"{str(e)}"
+                }, HttpStatus.HTTP_CUSTOM(500))
+
+            try:
+                result = func(*bound.args, **bound.kwargs)
+            except TypeError as e:
+                return make_res({
+                    "error": str(e)
+                }, HttpStatus.HTTP_CUSTOM(500))
 
             if isinstance(result, PAYLOAD_TYPE):
                 return make_res(result)

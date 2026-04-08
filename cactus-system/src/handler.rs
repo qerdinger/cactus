@@ -28,10 +28,11 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
 
         let path_requested = (protoc_impl as &dyn Protocol).path();
         let path = path_requested.strip_prefix("/").unwrap_or(path_requested).to_str().unwrap();
+        let query_strings = (protoc_impl as &dyn Protocol).query_strings();
 
         if let Some(pool) = registry.get_parallel_worker(path) {
             info!("Invoking function: {}", path);
-            let rslt = pool.invoke(JsonValue::Null);
+            let rslt = pool.invoke(query_strings.clone());
             let rslt_value = rslt.await;
             info!("Function completed: {}", path);
 
