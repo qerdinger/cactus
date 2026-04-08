@@ -2,13 +2,13 @@ use crate::registry::Registry;
 use cactus_com::client::Client;
 use cactus_com::magic_request::MagicRequest;
 use cactus_com::protocol::Protocol;
+use cactus_com::protocols::layers::application::http_status::HttpStatus;
 use serde_json::Value as JsonValue;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tracing::info;
-use cactus_com::protocols::layers::application::http_status::HttpStatus;
 
 pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &Arc<Registry>) -> Result<(), anyhow::Error> {
     let mut buffer = [0u8; 4096];
@@ -28,10 +28,11 @@ pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &A
 
         let path_requested = (protoc_impl as &dyn Protocol).path();
         let path = path_requested.strip_prefix("/").unwrap_or(path_requested).to_str().unwrap();
+        let query_strings = (protoc_impl as &dyn Protocol).query_strings();
 
         if let Some(pool) = registry.get_parallel_worker(path) {
             info!("Invoking function: {}", path);
-            let rslt = pool.invoke(JsonValue::Null);
+            let rslt = pool.invoke(query_strings.clone());
             let rslt_value = rslt.await;
             info!("Function completed: {}", path);
 

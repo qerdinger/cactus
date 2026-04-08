@@ -1,5 +1,4 @@
 use serde_json::{json, Value};
-use tracing::{info, warn};
 
 const STATUS_ID: &str = "_status_code";
 const PAYLOAD_ID: &str = "_payload";

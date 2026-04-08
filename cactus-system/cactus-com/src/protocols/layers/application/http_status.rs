@@ -42,7 +42,7 @@ impl HttpStatus {
             _ => HttpStatus::convert_status_to_u16_and_string(&HttpStatus::InternalServerError(None)),
         }
     }
-    
+
     pub fn convert_u16_to_status(http_status: u16) -> HttpStatus {
         match http_status {
             200 => HttpStatus::Ok,
@@ -53,11 +53,11 @@ impl HttpStatus {
             400 => HttpStatus::BadRequest,
             401 => HttpStatus::Unauthorized(sf!("Bad Request")),
             403 => HttpStatus::Forbidden(sf!("Forbidden")),
-            
+
             404 => HttpStatus::NotFound(sf!("Not Found")),
-            
+
             500 => HttpStatus::InternalServerError(None),
-            
+
             _ => HttpStatus::InternalServerError(Some(sf!("Http Status code not implemented"))),
         }
     }
