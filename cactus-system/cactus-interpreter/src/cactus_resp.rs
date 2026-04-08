@@ -1,4 +1,5 @@
 use serde_json::{json, Value};
+use tracing::{info, warn};
 
 const STATUS_ID: &str = "_status_code";
 const PAYLOAD_ID: &str = "_payload";
@@ -41,6 +42,6 @@ impl Into<CactusResponse> for Value {
             }
             _ => {}
         };
-        CactusResponse::error("error whilst casting into CactusResponse".to_string())
+        CactusResponse::error(self.to_string())
     }
 }
