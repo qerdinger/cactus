@@ -2,13 +2,13 @@ use crate::registry::Registry;
 use cactus_com::client::Client;
 use cactus_com::magic_request::MagicRequest;
 use cactus_com::protocol::Protocol;
+use cactus_com::protocols::layers::application::http_status::HttpStatus;
 use serde_json::Value as JsonValue;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tracing::info;
-use cactus_com::protocols::layers::application::http_status::HttpStatus;
 
 pub async fn handle_conn(mut client: Client<TcpStream, SocketAddr>, registry: &Arc<Registry>) -> Result<(), anyhow::Error> {
     let mut buffer = [0u8; 4096];

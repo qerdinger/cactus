@@ -5,6 +5,7 @@ use crate::protocols::layers::application::http_authorization::HttpAuthorization
 use crate::protocols::layers::application::http_encoding::HttpEncoding;
 use crate::protocols::layers::application::http_magic_resp_builder::HTTPMagicResponseBuilder;
 use crate::protocols::layers::application::http_method::HttpMethod;
+use crate::protocols::layers::application::http_status::HttpStatus;
 use crate::protocols::layers::application::user_agent::UserAgent;
 use anyhow::anyhow;
 use cactus_foundation::std::version::Version;
@@ -13,7 +14,6 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use tracing::{error, info};
 use url::Url;
-use crate::protocols::layers::application::http_status::HttpStatus;
 
 const INTERNAL_URL: &str = "http://cactus-sys.runtime.internal";
 

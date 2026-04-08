@@ -29,7 +29,7 @@ impl ParallelWorker {
         num_workers: usize,
     ) -> Self {
         let (tx, rx) = crossbeam_channel::bounded::<Job>(128);
-        
+
         info!("Creating {} parallel workers for function: {}", num_workers, function);
 
         let fragments_code = fragments
@@ -138,7 +138,7 @@ while True:
                 info!("ParallelWorker {} shut down", worker_id);
             });
         }
-        
+
         info!("Successfully spawned {} parallel workers for function: {}", num_workers, function);
 
         Self { tx }
