@@ -36,7 +36,7 @@ impl Protocol for HttpsProtocImpl {
         ProtocolType::Https
     }
 
-    fn make_resp(&self, body: &str) -> Box<dyn MagicResponseBuilder> {
+    fn make_resp(&self, body: &str, status_code: u16) -> Box<dyn MagicResponseBuilder> {
         todo!()
     }
 
